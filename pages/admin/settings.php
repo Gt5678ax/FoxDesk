@@ -2993,17 +2993,17 @@ include BASE_PATH . '/includes/components/page-header.php';
             // Drag and drop
             uploadZone.addEventListener('dragover', function (e) {
                 e.preventDefault();
-                uploadZone.classList.add('border-blue-400', 'bg-blue-50 dark:bg-blue-900/20');
+                uploadZone.classList.add('border-blue-400', 'bg-blue-50');
             });
 
             uploadZone.addEventListener('dragleave', function (e) {
                 e.preventDefault();
-                uploadZone.classList.remove('border-blue-400', 'bg-blue-50 dark:bg-blue-900/20');
+                uploadZone.classList.remove('border-blue-400', 'bg-blue-50');
             });
 
             uploadZone.addEventListener('drop', function (e) {
                 e.preventDefault();
-                uploadZone.classList.remove('border-blue-400', 'bg-blue-50 dark:bg-blue-900/20');
+                uploadZone.classList.remove('border-blue-400', 'bg-blue-50');
 
                 const files = e.dataTransfer.files;
                 if (files.length > 0) {
@@ -3053,17 +3053,17 @@ include BASE_PATH . '/includes/components/page-header.php';
 
             uploadZone.addEventListener('dragover', function (e) {
                 e.preventDefault();
-                uploadZone.classList.add('border-blue-400', 'bg-blue-50 dark:bg-blue-900/20');
+                uploadZone.classList.add('border-blue-400', 'bg-blue-50');
             });
 
             uploadZone.addEventListener('dragleave', function (e) {
                 e.preventDefault();
-                uploadZone.classList.remove('border-blue-400', 'bg-blue-50 dark:bg-blue-900/20');
+                uploadZone.classList.remove('border-blue-400', 'bg-blue-50');
             });
 
             uploadZone.addEventListener('drop', function (e) {
                 e.preventDefault();
-                uploadZone.classList.remove('border-blue-400', 'bg-blue-50 dark:bg-blue-900/20');
+                uploadZone.classList.remove('border-blue-400', 'bg-blue-50');
 
                 const files = e.dataTransfer.files;
                 if (files.length > 0) {
