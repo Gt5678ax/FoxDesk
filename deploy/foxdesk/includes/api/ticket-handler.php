@@ -1,0 +1,660 @@
+<?php
+/**
+ * API Handler: Ticket Operations
+ *
+ * Handles ticket-related API actions like status changes.
+ */
+
+/**
+ * Handle change ticket status
+ *
+ * Security: Uses can_see_ticket() for consistent permission checking
+ * across the application. Only users who can view the ticket can
+ * change its status.
+ */
+function api_change_status() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        api_error('Method not allowed', 405);
+    }
+
+    require_csrf_token(true);
+
+    $ticket_id = (int)($_POST['ticket_id'] ?? 0);
+    $status_id = (int)($_POST['status_id'] ?? 0);
+
+    $ticket = get_ticket($ticket_id);
+    $new_status = get_status($status_id);
+
+    if (!$ticket || !$new_status) {
+        api_error('Not found', 404);
+    }
+
+    // Check permission using centralized permission function
+    $user = current_user();
+
+    if (!$user) {
+        api_error('Unauthorized', 401);
+    }
+
+    // Use can_see_ticket for consistent permission checking
+    // Admin and agents with appropriate scope can change status
+    // Ticket owner can also change status on their own tickets
+    if (!can_see_ticket($ticket, $user)) {
+        // Log security event for audit trail
+        if (function_exists('log_security_event')) {
+            log_security_event('status_change_denied', $user['id'], json_encode([
+                'ticket_id' => $ticket_id,
+                'attempted_status' => $status_id
+            ]));
+        }
+        api_error('Forbidden', 403);
+    }
+
+    $old_status = get_status($ticket['status_id']);
+
+    db_update('tickets', ['status_id' => $status_id], 'id = ?', [$ticket_id]);
+    log_activity(
+        $ticket_id,
+        $user['id'],
+        'status_changed',
+        "Status changed from '{$old_status['name']}' to '{$new_status['name']}'"
+    );
+
+    // Send notification
+    require_once BASE_PATH . '/includes/mailer.php';
+    send_status_change_notification($ticket, $old_status, $new_status);
+
+    api_success(['status' => $new_status]);
+}
+
+/**
+ * Start timer for a ticket (AJAX)
+ */
+function api_start_timer() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        api_error('Method not allowed', 405);
+    }
+
+    require_csrf_token(true);
+
+    $user = current_user();
+    if (!$user || (!is_agent() && !is_admin())) {
+        api_error('Unauthorized', 401);
+    }
+
+    $ticket_id = (int)($_POST['ticket_id'] ?? 0);
+    $ticket = get_ticket($ticket_id);
+
+    if (!$ticket) {
+        api_error('Ticket not found', 404);
+    }
+
+    if (!can_see_ticket($ticket, $user)) {
+        api_error('Forbidden', 403);
+    }
+
+    if (!ticket_time_table_exists()) {
+        api_error(t('Time tracking is not available.'), 400);
+    }
+
+    // Check if timer already running
+    $active = get_active_ticket_timer($ticket_id, $user['id']);
+    if ($active) {
+        api_error(t('Timer is already running.'), 400);
+    }
+
+    // Get billing rates
+    $org_billable_rate = 0.0;
+    if (!empty($ticket['organization_id'])) {
+        $org = get_organization($ticket['organization_id']);
+        $org_billable_rate = (float)($org['billable_rate'] ?? 0);
+    }
+    $user_cost_rate = (float)($user['cost_rate'] ?? 0);
+
+    // Start the timer
+    $entry_id = db_insert('ticket_time_entries', [
+        'ticket_id' => $ticket_id,
+        'user_id' => $user['id'],
+        'started_at' => date('Y-m-d H:i:s'),
+        'ended_at' => null,
+        'duration_minutes' => 0,
+        'is_billable' => 1,
+        'billable_rate' => $org_billable_rate,
+        'cost_rate' => $user_cost_rate,
+        'is_manual' => 0,
+        'created_at' => date('Y-m-d H:i:s')
+    ]);
+
+    log_activity($ticket_id, $user['id'], 'time_started', 'Timer started');
+
+    api_success([
+        'entry_id' => $entry_id,
+        'started_at' => date('Y-m-d H:i:s'),
+        'message' => t('Timer started.')
+    ]);
+}
+
+/**
+ * Pause timer for a ticket (AJAX)
+ */
+function api_pause_timer() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        api_error('Method not allowed', 405);
+    }
+
+    require_csrf_token(true);
+
+    $user = current_user();
+    if (!$user || (!is_agent() && !is_admin())) {
+        api_error('Unauthorized', 401);
+    }
+
+    $ticket_id = (int)($_POST['ticket_id'] ?? 0);
+    $ticket = get_ticket($ticket_id);
+
+    if (!$ticket) {
+        api_error('Ticket not found', 404);
+    }
+
+    if (!can_see_ticket($ticket, $user)) {
+        api_error('Forbidden', 403);
+    }
+
+    require_once BASE_PATH . '/includes/ticket-time-functions.php';
+    $result = pause_ticket_timer($ticket_id, $user['id']);
+
+    if ($result['success']) {
+        log_activity($ticket_id, $user['id'], 'time_paused', 'Timer paused');
+        api_success($result);
+    } else {
+        api_error($result['error'], 400);
+    }
+}
+
+/**
+ * Resume timer for a ticket (AJAX)
+ */
+function api_resume_timer() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        api_error('Method not allowed', 405);
+    }
+
+    require_csrf_token(true);
+
+    $user = current_user();
+    if (!$user || (!is_agent() && !is_admin())) {
+        api_error('Unauthorized', 401);
+    }
+
+    $ticket_id = (int)($_POST['ticket_id'] ?? 0);
+    $ticket = get_ticket($ticket_id);
+
+    if (!$ticket) {
+        api_error('Ticket not found', 404);
+    }
+
+    if (!can_see_ticket($ticket, $user)) {
+        api_error('Forbidden', 403);
+    }
+
+    require_once BASE_PATH . '/includes/ticket-time-functions.php';
+    $result = resume_ticket_timer($ticket_id, $user['id']);
+
+    if ($result['success']) {
+        log_activity($ticket_id, $user['id'], 'time_resumed', 'Timer resumed');
+        api_success($result);
+    } else {
+        api_error($result['error'], 400);
+    }
+}
+
+/**
+ * Discard timer for a ticket (AJAX) - deletes without logging time
+ */
+function api_discard_timer() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        api_error('Method not allowed', 405);
+    }
+
+    require_csrf_token(true);
+
+    $user = current_user();
+    if (!$user || (!is_agent() && !is_admin())) {
+        api_error('Unauthorized', 401);
+    }
+
+    $ticket_id = (int)($_POST['ticket_id'] ?? 0);
+    $ticket = get_ticket($ticket_id);
+
+    if (!$ticket) {
+        api_error('Ticket not found', 404);
+    }
+
+    if (!can_see_ticket($ticket, $user)) {
+        api_error('Forbidden', 403);
+    }
+
+    require_once BASE_PATH . '/includes/ticket-time-functions.php';
+    $result = discard_ticket_timer($ticket_id, $user['id']);
+
+    if ($result['success']) {
+        log_activity($ticket_id, $user['id'], 'time_discarded', 'Timer discarded');
+        api_success($result);
+    } else {
+        api_error($result['error'], 400);
+    }
+}
+
+/**
+ * Delete time entry (AJAX)
+ */
+function api_delete_time_entry() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        api_error('Method not allowed', 405);
+    }
+
+    require_csrf_token(true);
+
+    $user = current_user();
+    if (!$user || (!is_agent() && !is_admin())) {
+        api_error('Unauthorized', 401);
+    }
+
+    $entry_id = (int)($_POST['entry_id'] ?? 0);
+
+    if (!ticket_time_table_exists()) {
+        api_error(t('Time tracking is not available.'), 400);
+    }
+
+    $entry = db_fetch_one("SELECT * FROM ticket_time_entries WHERE id = ?", [$entry_id]);
+    if (!$entry) {
+        api_error('Time entry not found', 404);
+    }
+
+    $ticket = get_ticket($entry['ticket_id']);
+    if (!$ticket || !can_see_ticket($ticket, $user)) {
+        api_error('Forbidden', 403);
+    }
+
+    require_once BASE_PATH . '/includes/ticket-time-functions.php';
+    if (delete_time_entry($entry_id)) {
+        log_activity($entry['ticket_id'], $user['id'], 'time_deleted', "Deleted time entry (" . format_duration_minutes($entry['duration_minutes'] ?? 0) . ")");
+        api_success(['message' => t('Time entry deleted.')]);
+    } else {
+        api_error(t('Failed to delete time entry.'), 500);
+    }
+}
+
+/**
+ * Get all unique tags across tickets (for autocomplete)
+ * GET — returns [{id: "tag", name: "tag"}, ...]
+ */
+function api_get_tags() {
+    $user = current_user();
+    if (!$user) {
+        api_error('Unauthorized', 401);
+    }
+
+    if (!function_exists('ticket_tags_column_exists') || !ticket_tags_column_exists()) {
+        api_success(['tags' => []]);
+        return;
+    }
+
+    $rows = db_fetch_all(
+        "SELECT DISTINCT tags FROM tickets WHERE tags IS NOT NULL AND tags != ''"
+    );
+
+    $all_tags = [];
+    $seen = [];
+    foreach ($rows as $row) {
+        $parts = explode(',', $row['tags']);
+        foreach ($parts as $part) {
+            $tag = trim($part);
+            if ($tag === '') continue;
+            $key = mb_strtolower($tag, 'UTF-8');
+            if (isset($seen[$key])) continue;
+            $seen[$key] = true;
+            $all_tags[] = ['id' => $tag, 'name' => $tag];
+        }
+    }
+
+    usort($all_tags, function ($a, $b) {
+        return strcasecmp($a['name'], $b['name']);
+    });
+
+    api_success(['tags' => $all_tags]);
+}
+
+/**
+ * Update ticket tags via AJAX
+ * POST — requires CSRF + edit permission
+ */
+function api_update_tags() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        api_error('Method not allowed', 405);
+    }
+
+    require_csrf_token(true);
+
+    $user = current_user();
+    if (!$user) {
+        api_error('Unauthorized', 401);
+    }
+
+    $ticket_id = (int) ($_POST['ticket_id'] ?? 0);
+    $tags_raw  = trim((string) ($_POST['tags'] ?? ''));
+
+    $ticket = get_ticket($ticket_id);
+    if (!$ticket) {
+        api_error('Ticket not found', 404);
+    }
+
+    if (!can_edit_ticket($ticket, $user)) {
+        api_error('Forbidden', 403);
+    }
+
+    if (!function_exists('ticket_tags_column_exists') || !ticket_tags_column_exists()) {
+        api_error('Tags not supported', 400);
+    }
+
+    $normalized = normalize_ticket_tags($tags_raw);
+    $update_data = ['tags' => $normalized !== '' ? $normalized : null];
+
+    update_ticket_with_history($ticket_id, $update_data, $user['id']);
+    log_activity($ticket_id, $user['id'], 'ticket_edited', 'Tags updated');
+
+    $new_tags = get_ticket_tags_array($normalized);
+    api_success(['tags' => $new_tags]);
+}
+
+/**
+ * Update time entry inline (AJAX) – used by worklog tab
+ */
+function api_update_time_inline() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        api_error('Method not allowed', 405);
+    }
+
+    require_csrf_token(true);
+
+    $user = current_user();
+    if (!$user || !is_admin()) {
+        api_error('Unauthorized', 401);
+    }
+
+    if (!ticket_time_table_exists()) {
+        api_error(t('Time tracking is not available.'), 400);
+    }
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    $entry_id   = (int) ($input['entry_id']   ?? 0);
+    $entry_date = $input['entry_date']         ?? date('Y-m-d');
+    $start_time = $input['start_time']         ?? '';
+    $end_time   = $input['end_time']           ?? '';
+
+    if ($entry_id <= 0 || !$start_time || !$end_time) {
+        api_error(t('Missing required fields.'), 400);
+    }
+
+    $entry = db_fetch_one("SELECT * FROM ticket_time_entries WHERE id = ?", [$entry_id]);
+    if (!$entry) {
+        api_error('Time entry not found', 404);
+    }
+
+    $start_dt = DateTime::createFromFormat('Y-m-d H:i', $entry_date . ' ' . $start_time);
+    $end_dt   = DateTime::createFromFormat('Y-m-d H:i', $entry_date . ' ' . $end_time);
+
+    if (!$start_dt || !$end_dt) {
+        api_error(t('Invalid time format.'), 400);
+    }
+
+    // If end time is before start time, assume it's the next day
+    if ($end_dt <= $start_dt) {
+        $end_dt->modify('+1 day');
+    }
+
+    $duration = max(1, (int) floor(($end_dt->getTimestamp() - $start_dt->getTimestamp()) / 60));
+
+    db_update('ticket_time_entries', [
+        'started_at'       => $start_dt->format('Y-m-d H:i:s'),
+        'ended_at'         => $end_dt->format('Y-m-d H:i:s'),
+        'duration_minutes' => $duration
+    ], 'id = ?', [$entry_id]);
+
+    api_success([
+        'duration_minutes'  => $duration,
+        'duration_formatted' => format_duration_minutes($duration),
+        'started_at'        => $start_dt->format('Y-m-d H:i:s'),
+        'ended_at'          => $end_dt->format('Y-m-d H:i:s'),
+    ]);
+}
+
+/**
+ * Edit a comment (AJAX)
+ */
+function api_edit_comment() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        api_error('Method not allowed', 405);
+    }
+
+    require_csrf_token(true);
+
+    $user = current_user();
+    if (!$user || (!is_agent() && !is_admin())) {
+        api_error('Unauthorized', 401);
+    }
+
+    $comment_id = (int)($_POST['comment_id'] ?? 0);
+    $content = trim($_POST['content'] ?? '');
+
+    if (empty($content)) {
+        api_error(t('Comment cannot be empty.'), 400);
+    }
+
+    // Get the comment
+    $comment = db_fetch_one("SELECT * FROM comments WHERE id = ?", [$comment_id]);
+    if (!$comment) {
+        api_error('Comment not found', 404);
+    }
+
+    // Get the ticket to verify access
+    $ticket = get_ticket($comment['ticket_id']);
+    if (!$ticket || !can_see_ticket($ticket, $user)) {
+        api_error('Forbidden', 403);
+    }
+
+    // Agents can only edit their own comments; admins can edit any
+    if (is_agent() && !is_admin() && (int)$comment['user_id'] !== (int)$user['id']) {
+        api_error('Forbidden', 403);
+    }
+
+    // Store original content for activity log
+    $original_content = $comment['content'];
+    $content_preview = mb_strlen($original_content) > 50
+        ? mb_substr($original_content, 0, 50) . '...'
+        : $original_content;
+
+    // Update the comment
+    try {
+        db_update('comments', [
+            'content' => $content,
+            'updated_at' => date('Y-m-d H:i:s')
+        ], 'id = ?', [$comment_id]);
+
+        if (function_exists('log_ticket_history')) {
+            log_ticket_history($comment['ticket_id'], $user['id'], 'comment_content', $original_content, $content);
+        }
+
+        // Log the activity
+        log_activity(
+            $comment['ticket_id'],
+            $user['id'],
+            'comment_edited',
+            t('Comment edited') . ': "' . $content_preview . '"'
+        );
+
+        api_success([
+            'message' => t('Comment updated.'),
+            'content_html' => nl2br(e($content))
+        ]);
+    } catch (Exception $e) {
+        api_error(t('Failed to update comment.'), 500);
+    }
+}
+
+/**
+ * Delete a comment (AJAX)
+ */
+function api_delete_comment() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        api_error('Method not allowed', 405);
+    }
+
+    require_csrf_token(true);
+
+    $user = current_user();
+    if (!$user || (!is_agent() && !is_admin())) {
+        api_error('Unauthorized', 401);
+    }
+
+    $comment_id = (int)($_POST['comment_id'] ?? 0);
+
+    // Get the comment
+    $comment = db_fetch_one("SELECT * FROM comments WHERE id = ?", [$comment_id]);
+    if (!$comment) {
+        api_error('Comment not found', 404);
+    }
+
+    $linked_attachments = db_fetch_all(
+        "SELECT original_name, filename FROM attachments WHERE comment_id = ?",
+        [$comment_id]
+    );
+
+    // Get the ticket to verify access
+    $ticket = get_ticket($comment['ticket_id']);
+    if (!$ticket || !can_see_ticket($ticket, $user)) {
+        api_error('Forbidden', 403);
+    }
+
+    // Agents can only delete their own comments; admins can delete any
+    if (is_agent() && !is_admin() && (int)$comment['user_id'] !== (int)$user['id']) {
+        api_error('Forbidden', 403);
+    }
+
+    // Store content preview for activity log
+    $content_preview = mb_strlen($comment['content']) > 50
+        ? mb_substr($comment['content'], 0, 50) . '...'
+        : $comment['content'];
+
+    // Delete the comment
+    try {
+        if (function_exists('log_ticket_history')) {
+            log_ticket_history($comment['ticket_id'], $user['id'], 'comment_deleted', $comment['content'], null);
+            foreach ($linked_attachments as $attachment) {
+                $attachment_name = trim((string) ($attachment['original_name'] ?? $attachment['filename'] ?? ''));
+                if ($attachment_name !== '') {
+                    log_ticket_history($comment['ticket_id'], $user['id'], 'attachment_unlinked', $attachment_name, null);
+                }
+            }
+        }
+
+        db_delete('comments', 'id = ?', [$comment_id]);
+
+        // Log the activity
+        log_activity(
+            $comment['ticket_id'],
+            $user['id'],
+            'comment_deleted',
+            t('Comment deleted') . ': "' . $content_preview . '"'
+        );
+
+        api_success([
+            'message' => t('Comment deleted.')
+        ]);
+    } catch (Exception $e) {
+        api_error(t('Failed to delete comment.'), 500);
+    }
+}
+
+/**
+ * Search tickets for command palette / quick search
+ * Returns top 8 matching tickets (title + ticket_code)
+ */
+function api_search_tickets() {
+    $q = trim($_GET['q'] ?? '');
+    if (strlen($q) < 2) {
+        api_success(['tickets' => []]);
+        return;
+    }
+
+    $user = current_user();
+    $user_id = $user['id'] ?? 0;
+    $is_staff = is_admin() || is_agent();
+
+    // Build search: title LIKE + optional ticket-code-to-ID lookup
+    $like = '%' . $q . '%';
+    $params = [$like];
+
+    // Check if query looks like a ticket code (e.g. "TK-10001" or just "10001")
+    $code_id = null;
+    if (function_exists('parse_ticket_code')) {
+        $code_id = parse_ticket_code(strtoupper($q));
+    }
+    if ($code_id === null && preg_match('/^\d+$/', $q)) {
+        // Bare number — could be ticket ID offset
+        $code_id = (int)$q - 10000;
+    }
+
+    $code_sql = '';
+    if ($code_id !== null && $code_id > 0) {
+        $code_sql = ' OR t.id = ?';
+        $params[] = $code_id;
+    }
+
+    // Scope: staff sees all, users see only own
+    $scope_sql = '';
+    if (!$is_staff) {
+        $scope_sql = ' AND t.user_id = ?';
+        $params[] = $user_id;
+    }
+
+    // Exclude archived
+    $archive_sql = '';
+    if (function_exists('ticket_archive_column_exists') && ticket_archive_column_exists()) {
+        $archive_sql = ' AND (t.archived_at IS NULL)';
+    }
+
+    $sql = "SELECT t.id, t.title,
+                   s.name AS status_name, s.color AS status_color
+            FROM tickets t
+            LEFT JOIN statuses s ON s.id = t.status_id
+            WHERE (t.title LIKE ?{$code_sql})
+            {$scope_sql}
+            {$archive_sql}
+            ORDER BY t.id DESC
+            LIMIT 8";
+
+    try {
+        $rows = db_fetch_all($sql, $params);
+    } catch (Exception $e) {
+        $rows = [];
+    }
+
+    $tickets = [];
+    foreach ($rows as $row) {
+        $ticket_code = function_exists('get_ticket_code') ? get_ticket_code($row['id']) : ('TK-' . $row['id']);
+        $url = function_exists('ticket_url') ? ticket_url($row) : ('index.php?page=ticket-detail&id=' . $row['id']);
+        $tickets[] = [
+            'id' => (int)$row['id'],
+            'title' => $row['title'],
+            'ticket_code' => $ticket_code,
+            'status_name' => $row['status_name'] ?? '',
+            'status_color' => $row['status_color'] ?? '',
+            'url' => $url,
+        ];
+    }
+
+    api_success(['tickets' => $tickets]);
+}
+
+

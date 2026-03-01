@@ -100,6 +100,16 @@ try {
     $result['errors'][] = 'ingest: ' . $e->getMessage();
 }
 
+// --- Notification cleanup ---
+try {
+    if (function_exists('cleanup_old_notifications')) {
+        $deleted = cleanup_old_notifications(90);
+        $result['notifications_cleanup'] = ['deleted' => $deleted];
+    }
+} catch (Throwable $e) {
+    $result['errors'][] = 'notification_cleanup: ' . $e->getMessage();
+}
+
 // --- Update check ---
 try {
     if (is_update_check_enabled()) {

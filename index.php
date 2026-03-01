@@ -286,6 +286,10 @@ switch ($page) {
         }
         break;
 
+    case 'notifications':
+        require_once BASE_PATH . '/pages/notifications.php';
+        break;
+
     case 'profile':
         require_once BASE_PATH . '/pages/profile.php';
         break;

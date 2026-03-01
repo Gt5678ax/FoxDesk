@@ -16,6 +16,7 @@ require_once __DIR__ . '/user-handler.php';
 require_once __DIR__ . '/smtp-handler.php';
 require_once __DIR__ . '/agent-handler.php';
 require_once __DIR__ . '/update-api.php';
+require_once __DIR__ . '/notification-handler.php';
 
 /**
  * Route API requests to appropriate handlers
@@ -103,6 +104,12 @@ function route_api_request($action) {
         'agent-add-comment' => 'api_agent_add_comment',
         'agent-update-status' => 'api_agent_update_status',
         'agent-log-time' => 'api_agent_log_time',
+
+        // --- Notification endpoints ---
+        'get-notifications' => 'api_get_notifications',
+        'get-notification-count' => 'api_get_notification_count',
+        'mark-notification-read' => 'api_mark_notification_read',
+        'mark-all-notifications-read' => 'api_mark_all_notifications_read',
 
         // --- Update check endpoints (admin only) ---
         'check-for-updates' => 'api_check_for_updates',

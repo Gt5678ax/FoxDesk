@@ -204,6 +204,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
+            // In-app notifications
+            if (function_exists('dispatch_ticket_notifications')) {
+                $desc_preview = strip_tags($description);
+                $desc_preview = mb_strlen($desc_preview) > 80 ? mb_substr($desc_preview, 0, 77) . '...' : $desc_preview;
+                dispatch_ticket_notifications('new_ticket', $ticket_id, $user['id'], [
+                    'comment_preview' => $desc_preview,
+                ]);
+                if ($assignee_id) {
+                    dispatch_ticket_notifications('assigned_to_you', $ticket_id, $user['id'], [
+                        'assignee_id' => $assignee_id,
+                    ]);
+                }
+            }
+
             if (empty($upload_errors)) {
                 flash(t('Ticket created successfully.'), 'success');
             }

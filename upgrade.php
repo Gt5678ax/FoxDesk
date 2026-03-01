@@ -1111,6 +1111,42 @@ if (!$check) {
     }
 }
 
+// Create notifications table
+$check = db_fetch_one("SHOW TABLES LIKE 'notifications'");
+if (!$check) {
+    try {
+        db_query("
+            CREATE TABLE notifications (
+                id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                user_id INT UNSIGNED NOT NULL,
+                ticket_id INT UNSIGNED NULL,
+                type VARCHAR(50) NOT NULL,
+                actor_id INT UNSIGNED NULL,
+                data JSON NULL,
+                is_read TINYINT(1) DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_user_read_created (user_id, is_read, created_at DESC),
+                INDEX idx_user_created (user_id, created_at DESC),
+                INDEX idx_created_at (created_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+        $messages[] = "OK: Created table `notifications`";
+    } catch (Exception $e) {
+        $messages[] = "ERROR: Failed to create table `notifications`: " . $e->getMessage();
+    }
+}
+
+// Add last_notifications_seen_at to users
+$check = db_fetch_one("SHOW COLUMNS FROM `users` LIKE 'last_notifications_seen_at'");
+if (!$check) {
+    try {
+        db_query("ALTER TABLE `users` ADD COLUMN `last_notifications_seen_at` DATETIME NULL");
+        $messages[] = "OK: Added column `last_notifications_seen_at` to `users`";
+    } catch (Exception $e) {
+        $messages[] = "ERROR: Failed to add column last_notifications_seen_at: " . $e->getMessage();
+    }
+}
+
 if (empty($messages)) {
     $messages[] = "Database is up to date; no changes were required.";
 }

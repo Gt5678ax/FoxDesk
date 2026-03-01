@@ -193,6 +193,20 @@ function api_agent_create_ticket()
         }
     }
 
+    // In-app notifications
+    if (function_exists('dispatch_ticket_notifications')) {
+        $desc_text = strip_tags($input['description'] ?? '');
+        $desc_preview = mb_strlen($desc_text) > 80 ? mb_substr($desc_text, 0, 77) . '...' : $desc_text;
+        dispatch_ticket_notifications('new_ticket', $ticket_id, $user['id'], [
+            'comment_preview' => $desc_preview,
+        ]);
+        if (!empty($input['assignee_id'])) {
+            dispatch_ticket_notifications('assigned_to_you', $ticket_id, $user['id'], [
+                'assignee_id' => (int) $input['assignee_id'],
+            ]);
+        }
+    }
+
     api_success($response);
 }
 
@@ -469,6 +483,15 @@ function api_agent_add_comment()
         }
     }
 
+    // In-app notification for new comment (skip internal notes)
+    if (!$is_internal && function_exists('dispatch_ticket_notifications')) {
+        $preview = mb_strlen($input['content']) > 80 ? mb_substr($input['content'], 0, 77) . '...' : $input['content'];
+        dispatch_ticket_notifications('new_comment', $ticket_id, $user['id'], [
+            'comment_preview' => strip_tags($preview),
+            'comment_id' => $comment_id,
+        ]);
+    }
+
     api_success($response);
 }
 
@@ -537,6 +560,16 @@ function api_agent_update_status()
             'old_status_id' => (int) $ticket['status_id'],
             'new_status_id' => $status_id,
         ]));
+    }
+
+    // In-app notification for status change
+    if (function_exists('dispatch_ticket_notifications')) {
+        $user = $user ?? current_user();
+        $old_status_row = db_fetch_one("SELECT name FROM statuses WHERE id = ?", [(int) $ticket['status_id']]);
+        dispatch_ticket_notifications('status_changed', $ticket_id, $user['id'], [
+            'old_status' => $old_status_row['name'] ?? '',
+            'new_status' => $status['name'] ?? '',
+        ]);
     }
 
     api_success([

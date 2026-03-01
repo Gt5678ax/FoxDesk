@@ -181,6 +181,15 @@ if (is_admin() && file_exists(__DIR__ . '/update-check-functions.php')) {
                     <span><?php echo e(t('Dashboard')); ?></span>
                 </a>
 
+                <?php $is_notifications_page = ($page ?? '') === 'notifications'; ?>
+                <a href="<?php echo url('notifications'); ?>"
+                    class="nav-item <?php echo $is_notifications_page ? 'active' : ''; ?>"
+                    <?php echo $is_notifications_page ? 'aria-current="page"' : ''; ?>>
+                    <?php echo get_icon('bell', 'nav-item__icon'); ?>
+                    <span><?php echo e(t('Notifications')); ?></span>
+                    <span id="sidebar-notif-badge" class="notif-sidebar-badge hidden">0</span>
+                </a>
+
                 <?php $is_tickets = ($page ?? '') === 'tickets' && ($_GET['archived'] ?? '') !== '1'; ?>
                 <a href="<?php echo url('tickets'); ?>"
                     class="nav-item <?php echo $is_tickets ? 'active' : ''; ?>"
@@ -197,40 +206,20 @@ if (is_admin() && file_exists(__DIR__ . '/update-check-functions.php')) {
                     <span><?php echo e(t('New ticket')); ?></span>
                 </a>
 
-                <?php if (is_admin()): ?>
-                    <?php $is_archive = ($page ?? '') === 'tickets' && ($_GET['archived'] ?? '') === '1'; ?>
-                    <a href="<?php echo url('tickets', ['archived' => '1']); ?>"
-                        class="nav-item <?php echo $is_archive ? 'active' : ''; ?>"
-                        <?php echo $is_archive ? 'aria-current="page"' : ''; ?>>
-                        <?php echo get_icon('archive', 'nav-item__icon'); ?>
-                        <span><?php echo e(t('Archive')); ?></span>
+                <?php if ((is_admin() || is_agent()) && function_exists('ticket_time_table_exists') && ticket_time_table_exists()): ?>
+                    <?php $is_quick_start = isset($_GET['auto_timer']); ?>
+                    <a href="<?php echo url('new-ticket', ['auto_timer' => '1']); ?>"
+                        class="nav-item <?php echo $is_quick_start ? 'active' : ''; ?>"
+                        <?php echo $is_quick_start ? 'aria-current="page"' : ''; ?>>
+                        <?php echo get_icon('play', 'nav-item__icon'); ?>
+                        <span><?php echo e(t('Quick start')); ?></span>
                     </a>
                 <?php endif; ?>
             </nav>
 
-            <!-- Staff section (admin/agent) -->
+            <!-- Active timers (staff only) -->
             <?php if (is_admin() || is_agent()): ?>
-                <div class="mt-4 pt-3 border-t space-y-1.5" style="border-color: var(--border-light);">
-                    <?php if (function_exists('ticket_time_table_exists') && ticket_time_table_exists()): ?>
-                        <?php $is_quick_start = isset($_GET['auto_timer']); ?>
-                        <a href="<?php echo url('new-ticket', ['auto_timer' => '1']); ?>"
-                            class="nav-item <?php echo $is_quick_start ? 'active' : ''; ?>"
-                            <?php echo $is_quick_start ? 'aria-current="page"' : ''; ?>>
-                            <?php echo get_icon('play', 'nav-item__icon'); ?>
-                            <span><?php echo e(t('Quick start')); ?></span>
-                        </a>
-                    <?php endif; ?>
-                    <?php $is_reports = ($_GET['section'] ?? '') === 'reports'; ?>
-                    <a href="<?php echo url('admin', ['section' => 'reports']); ?>"
-                        class="nav-item <?php echo $is_reports ? 'active' : ''; ?>"
-                        <?php echo $is_reports ? 'aria-current="page"' : ''; ?>>
-                        <?php echo get_icon('chart-bar', 'nav-item__icon'); ?>
-                        <span><?php echo e(t('Time report')); ?></span>
-                    </a>
-                </div>
-
                 <?php
-                // Sidebar active timers widget
                 $sidebar_timers = [];
                 if (function_exists('ticket_time_table_exists') && ticket_time_table_exists() && function_exists('get_user_all_active_timers')) {
                     $sidebar_timers = get_user_all_active_timers($user['id']);
@@ -268,35 +257,6 @@ if (is_admin() && file_exists(__DIR__ . '/update-check-functions.php')) {
                         </a>
                         <?php endforeach; ?>
                     </div>
-                </div>
-            <?php endif; ?>
-
-            <?php if (is_admin()): ?>
-                <div class="mt-3 pt-3 border-t" style="border-color: var(--border-light);">
-                    <p class="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider" style="color: var(--text-muted);"><?php echo e(t('Admin')); ?></p>
-                    <nav class="space-y-1.5" aria-label="<?php echo e(t('Admin navigation')); ?>">
-                        <?php $is_users = ($_GET['section'] ?? '') === 'users'; ?>
-                        <a href="<?php echo url('admin', ['section' => 'users']); ?>"
-                            class="nav-item <?php echo $is_users ? 'active' : ''; ?>"
-                            <?php echo $is_users ? 'aria-current="page"' : ''; ?>>
-                            <?php echo get_icon('users', 'nav-item__icon'); ?>
-                            <span><?php echo e(t('Users')); ?></span>
-                        </a>
-                        <?php $is_orgs = ($_GET['section'] ?? '') === 'organizations'; ?>
-                        <a href="<?php echo url('admin', ['section' => 'organizations']); ?>"
-                            class="nav-item <?php echo $is_orgs ? 'active' : ''; ?>"
-                            <?php echo $is_orgs ? 'aria-current="page"' : ''; ?>>
-                            <?php echo get_icon('building', 'nav-item__icon'); ?>
-                            <span><?php echo e(t('Organizations')); ?></span>
-                        </a>
-                        <?php $is_settings = ($_GET['section'] ?? '') === 'settings'; ?>
-                        <a href="<?php echo url('admin', ['section' => 'settings']); ?>"
-                            class="nav-item <?php echo $is_settings ? 'active' : ''; ?>"
-                            <?php echo $is_settings ? 'aria-current="page"' : ''; ?>>
-                            <?php echo get_icon('cog', 'nav-item__icon'); ?>
-                            <span><?php echo e(t('Settings')); ?></span>
-                        </a>
-                    </nav>
                 </div>
             <?php endif; ?>
         </div>
@@ -363,14 +323,22 @@ if (is_admin() && file_exists(__DIR__ . '/update-check-functions.php')) {
                     <span class="theme-text-dark hidden"><?php echo e(t('Light mode')); ?></span>
                 </button>
 
-                <?php if (is_admin()): ?>
+                <?php if (is_admin() || is_agent()): ?>
                 <div class="border-t my-2" role="separator" style="border-color: var(--border-light);"></div>
 
-                <a href="<?php echo url('admin', ['section' => 'settings']); ?>" role="menuitem"
+                <a href="<?php echo url('admin', ['section' => 'reports']); ?>" role="menuitem"
                     class="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors sidebar-hover"
                     style="color: var(--text-secondary);">
-                    <?php echo get_icon('cog', 'w-4 h-4'); ?>
-                    <span><?php echo e(t('Settings')); ?></span>
+                    <?php echo get_icon('chart-bar', 'w-4 h-4'); ?>
+                    <span><?php echo e(t('Time report')); ?></span>
+                </a>
+
+                <?php if (is_admin()): ?>
+                <a href="<?php echo url('admin', ['section' => 'users']); ?>" role="menuitem"
+                    class="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors sidebar-hover"
+                    style="color: var(--text-secondary);">
+                    <?php echo get_icon('users', 'w-4 h-4'); ?>
+                    <span><?php echo e(t('Users')); ?></span>
                 </a>
                 <a href="<?php echo url('admin', ['section' => 'organizations']); ?>" role="menuitem"
                     class="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors sidebar-hover"
@@ -378,11 +346,11 @@ if (is_admin() && file_exists(__DIR__ . '/update-check-functions.php')) {
                     <?php echo get_icon('building', 'w-4 h-4'); ?>
                     <span><?php echo e(t('Organizations')); ?></span>
                 </a>
-                <a href="<?php echo url('admin', ['section' => 'users']); ?>" role="menuitem"
+                <a href="<?php echo url('admin', ['section' => 'settings']); ?>" role="menuitem"
                     class="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors sidebar-hover"
                     style="color: var(--text-secondary);">
-                    <?php echo get_icon('users', 'w-4 h-4'); ?>
-                    <span><?php echo e(t('Users')); ?></span>
+                    <?php echo get_icon('cog', 'w-4 h-4'); ?>
+                    <span><?php echo e(t('Settings')); ?></span>
                 </a>
                 <a href="<?php echo url('admin', ['section' => 'recurring-tasks']); ?>" role="menuitem"
                     class="flex items-center gap-3 px-4 py-2.5 text-sm transition-colors sidebar-hover"
@@ -396,6 +364,7 @@ if (is_admin() && file_exists(__DIR__ . '/update-check-functions.php')) {
                     <?php echo get_icon('archive', 'w-4 h-4'); ?>
                     <span><?php echo e(t('Archive')); ?></span>
                 </a>
+                <?php endif; ?>
                 <?php endif; ?>
 
                 <div class="border-t my-2" role="separator" style="border-color: var(--border-light);"></div>
@@ -423,6 +392,16 @@ if (is_admin() && file_exists(__DIR__ . '/update-check-functions.php')) {
                 <?php echo e($page_title ?? t('Dashboard')); ?>
             </h1>
             <div class="flex items-center space-x-2">
+                <!-- Notification Bell (Mobile) -->
+                <div class="relative">
+                    <button onclick="toggleNotificationPanel()" id="mobile-notif-btn"
+                        class="p-2 rounded-xl transition-all sidebar-hover relative" style="color: var(--text-secondary);"
+                        aria-label="<?php echo e(t('Notifications')); ?>" aria-expanded="false">
+                        <?php echo get_icon('bell', 'w-5 h-5'); ?>
+                        <span id="notif-badge-mobile" class="notif-badge hidden">0</span>
+                    </button>
+                </div>
+
                 <a href="<?php echo url('tickets'); ?>" class="p-2 rounded-xl transition-all sidebar-hover" style="color: var(--text-secondary);"
                     aria-label="<?php echo e(t('Search tickets')); ?>">
                     <?php echo get_icon('search'); ?>
@@ -483,6 +462,17 @@ if (is_admin() && file_exists(__DIR__ . '/update-check-functions.php')) {
                         <?php echo get_icon('search', 'w-4 h-4'); ?>
                     </span>
                 </form>
+
+                <!-- Notification Bell (Desktop) -->
+                <div class="relative">
+                    <button onclick="toggleNotificationPanel()" id="desktop-notif-btn"
+                        class="p-2 rounded-xl transition-all sidebar-hover relative" style="color: var(--text-secondary);"
+                        aria-label="<?php echo e(t('Notifications')); ?>" aria-expanded="false">
+                        <?php echo get_icon('bell', 'w-5 h-5'); ?>
+                        <span id="notif-badge-desktop" class="notif-badge hidden">0</span>
+                    </button>
+                </div>
+
                 <style>
                     [data-theme="dark"] .header-search-input,
                     [data-theme="dark"] #header-search {
@@ -504,6 +494,30 @@ if (is_admin() && file_exists(__DIR__ . '/update-check-functions.php')) {
 
             </div>
         </header>
+
+        <!-- Notification Panel (shared between mobile & desktop) -->
+        <div id="notification-panel" class="hidden fixed z-50 glass rounded-xl shadow-2xl animate-scale-in"
+            style="width: min(396px, calc(100vw - 2rem)); max-height: 480px; right: 1rem; top: 3.5rem;">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color: var(--border-light);">
+                <h3 class="font-semibold text-sm" style="color: var(--text-primary);"><?php echo e(t('Notifications')); ?></h3>
+                <button onclick="markAllNotificationsRead()" id="notif-mark-all-btn"
+                    class="text-xs font-medium hover:underline" style="color: var(--accent-primary);">
+                    <?php echo e(t('Mark all as read')); ?>
+                </button>
+            </div>
+            <!-- Content -->
+            <div id="notification-list" class="overflow-y-auto" style="max-height: 420px;">
+                <div id="notif-loading" class="flex items-center justify-center py-8">
+                    <div class="w-5 h-5 border-2 rounded-full animate-spin" style="border-color: var(--border-light); border-top-color: var(--accent-primary);"></div>
+                </div>
+                <div id="notif-empty" class="hidden text-center py-8 px-4">
+                    <div style="color: var(--text-muted);" class="mb-2"><?php echo get_icon('bell', 'w-8 h-8 mx-auto opacity-30'); ?></div>
+                    <p class="text-sm" style="color: var(--text-muted);"><?php echo e(t('No notifications yet')); ?></p>
+                </div>
+                <div id="notif-items"></div>
+            </div>
+        </div>
 
         <!-- Flash / Toast Notifications -->
         <div id="app-toast-stack" class="toast-stack" aria-live="polite" aria-atomic="true">
@@ -545,6 +559,311 @@ if (is_admin() && file_exists(__DIR__ . '/update-check-functions.php')) {
         }
         </script>
         <?php endif; ?>
+
+        <!-- Notification Center CSS -->
+        <style>
+            .notif-badge {
+                position: absolute;
+                top: 2px; right: 2px;
+                min-width: 18px; height: 18px;
+                padding: 0 5px;
+                font-size: 11px; font-weight: 600; line-height: 18px;
+                text-align: center;
+                color: #fff;
+                background: #ef4444;
+                border-radius: 9px;
+                pointer-events: none;
+            }
+            .notif-badge.pulse {
+                animation: notif-pulse 2s ease-in-out infinite;
+            }
+            .notif-sidebar-badge {
+                margin-left: auto;
+                min-width: 18px; height: 18px;
+                padding: 0 5px;
+                font-size: 11px; font-weight: 600; line-height: 18px;
+                text-align: center;
+                color: #fff;
+                background: #ef4444;
+                border-radius: 9px;
+            }
+            @keyframes notif-pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.15); }
+            }
+            .notif-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.75rem;
+                padding: 0.75rem 1rem;
+                cursor: pointer;
+                transition: background 0.15s;
+                border-left: 3px solid transparent;
+            }
+            .notif-item:hover {
+                background: var(--surface-hover, rgba(0,0,0,0.03));
+            }
+            [data-theme="dark"] .notif-item:hover {
+                background: rgba(255,255,255,0.05);
+            }
+            .notif-item.unread {
+                border-left-color: var(--accent-primary, #3b82f6);
+            }
+            .notif-item .notif-avatar {
+                width: 32px; height: 32px;
+                border-radius: 8px;
+                flex-shrink: 0;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 13px; font-weight: 600;
+                color: #fff;
+                background: var(--text-muted, #9ca3af);
+                overflow: hidden;
+            }
+            .notif-item .notif-avatar img {
+                width: 100%; height: 100%; object-fit: cover;
+            }
+            .notif-item .notif-body {
+                flex: 1; min-width: 0;
+            }
+            .notif-item .notif-text {
+                font-size: 13px; line-height: 1.4;
+                color: var(--text-secondary);
+            }
+            .notif-item.unread .notif-text {
+                color: var(--text-primary);
+                font-weight: 500;
+            }
+            .notif-item .notif-time {
+                font-size: 11px;
+                color: var(--text-muted);
+                margin-top: 2px;
+            }
+            .notif-group-header {
+                padding: 0.5rem 1rem 0.25rem;
+                font-size: 11px; font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: var(--text-muted);
+            }
+            #notification-list::-webkit-scrollbar { width: 4px; }
+            #notification-list::-webkit-scrollbar-track { background: transparent; }
+            #notification-list::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+        </style>
+
+        <!-- Notification Center JS -->
+        <script>
+        (function() {
+            var _notifPanel = null;
+            var _notifLoaded = false;
+            var _notifOpen = false;
+            var _pollInterval = null;
+            var _lastCount = 0;
+
+            function esc(s) {
+                var d = document.createElement('div');
+                d.textContent = s || '';
+                return d.innerHTML;
+            }
+
+            function avatarColor(name) {
+                var h = 0;
+                for (var i = 0; i < (name||'').length; i++) h = (name.charCodeAt(i) + ((h << 5) - h)) | 0;
+                return 'hsl(' + (Math.abs(h) % 360) + ', 55%, 60%)';
+            }
+
+            function avatarUrl(path) {
+                if (!path) return '';
+                if (path.indexOf('data:') === 0 || path.indexOf('http') === 0) return path;
+                // Use image.php proxy — extract filename from e.g. "uploads/avatar_emily.png"
+                var filename = path.split('/').pop().split('?')[0];
+                return 'image.php?f=' + encodeURIComponent(filename);
+            }
+
+            function avatarHtml(n) {
+                if (n.actor_avatar) {
+                    var src = avatarUrl(n.actor_avatar);
+                    var fallbackInit = esc((n.actor_name||'?').charAt(0).toUpperCase());
+                    return '<div class="notif-avatar" style="background:' + avatarColor(n.actor_name) + '"><img src="' + esc(src) + '" onerror="this.style.display=\'none\';this.parentElement.textContent=\'' + fallbackInit + '\'"></div>';
+                }
+                var init = (n.actor_name || '?').charAt(0).toUpperCase();
+                return '<div class="notif-avatar" style="background:' + avatarColor(n.actor_name) + '">' + esc(init) + '</div>';
+            }
+
+            function renderItem(n) {
+                var cls = 'notif-item' + (n.is_read ? '' : ' unread');
+                var ticketUrl = n.ticket_id ? ('index.php?page=ticket&id=' + n.ticket_id) : '#';
+                return '<div class="' + cls + '" data-id="' + n.id + '" onclick="notifItemClick(event,' + n.id + ',' + (n.ticket_id||0) + ')">'
+                    + avatarHtml(n)
+                    + '<div class="notif-body">'
+                    + '<div class="notif-text">' + esc(n.text) + '</div>'
+                    + '<div class="notif-time">' + esc(n.time_ago) + '</div>'
+                    + '</div></div>';
+            }
+
+            function renderGroup(label, items) {
+                if (!items || items.length === 0) return '';
+                var html = '<div class="notif-group-header">' + esc(label) + '</div>';
+                for (var i = 0; i < items.length; i++) html += renderItem(items[i]);
+                return html;
+            }
+
+            window.toggleNotificationPanel = function() {
+                _notifPanel = document.getElementById('notification-panel');
+                if (!_notifPanel) return;
+
+                _notifOpen = !_notifOpen;
+                if (_notifOpen) {
+                    _notifPanel.classList.remove('hidden');
+                    // Position for mobile vs desktop
+                    if (window.innerWidth < 1024) {
+                        _notifPanel.style.top = '3.5rem';
+                        _notifPanel.style.right = '0.5rem';
+                    } else {
+                        _notifPanel.style.top = '3.5rem';
+                        _notifPanel.style.right = '1rem';
+                    }
+                    if (!_notifLoaded) loadNotifications();
+                } else {
+                    _notifPanel.classList.add('hidden');
+                }
+            };
+
+            window.notifItemClick = function(event, id, ticketId) {
+                // Mark as read
+                var el = event.currentTarget;
+                if (el && el.classList.contains('unread')) {
+                    el.classList.remove('unread');
+                    fetch('index.php?page=api&action=mark-notification-read', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': window.csrfToken},
+                        body: 'notification_id=' + id + '&csrf_token=' + encodeURIComponent(window.csrfToken)
+                    }).catch(function(){});
+                }
+                // Navigate to ticket (nid for server-side mark-read)
+                if (ticketId) {
+                    window.location.href = 'index.php?page=ticket&id=' + ticketId + '&nid=' + id;
+                }
+            };
+
+            window.markAllNotificationsRead = function() {
+                fetch('index.php?page=api&action=mark-all-notifications-read', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-Token': window.csrfToken},
+                    body: 'csrf_token=' + encodeURIComponent(window.csrfToken)
+                }).then(function() {
+                    // Visual update
+                    document.querySelectorAll('.notif-item.unread').forEach(function(el) { el.classList.remove('unread'); });
+                    updateBadge(0);
+                }).catch(function(){});
+            };
+
+            function loadNotifications() {
+                var loading = document.getElementById('notif-loading');
+                var empty = document.getElementById('notif-empty');
+                var items = document.getElementById('notif-items');
+                if (loading) loading.classList.remove('hidden');
+                if (empty) empty.classList.add('hidden');
+                if (items) items.innerHTML = '';
+
+                fetch('index.php?page=api&action=get-notifications')
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        if (loading) loading.classList.add('hidden');
+                        if (!res.success || !res.groups) { if (empty) empty.classList.remove('hidden'); return; }
+
+                        var g = res.groups || {};
+                        var html = '';
+                        html += renderGroup(<?php echo json_encode(t('Today')); ?>, g.today);
+                        html += renderGroup(<?php echo json_encode(t('Yesterday')); ?>, g.yesterday);
+                        html += renderGroup(<?php echo json_encode(t('Earlier')); ?>, g.earlier);
+
+                        if (!html) {
+                            if (empty) empty.classList.remove('hidden');
+                        } else {
+                            if (items) items.innerHTML = html;
+                        }
+
+                        updateBadge(res.unread_count || 0);
+                        _notifLoaded = true;
+                    })
+                    .catch(function() {
+                        if (loading) loading.classList.add('hidden');
+                        if (empty) empty.classList.remove('hidden');
+                    });
+            }
+
+            function updateBadge(count) {
+                _lastCount = count;
+                ['notif-badge-mobile', 'notif-badge-desktop', 'sidebar-notif-badge'].forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (!el) return;
+                    if (count > 0) {
+                        el.textContent = count > 99 ? '99+' : count;
+                        el.classList.remove('hidden');
+                        if (id !== 'sidebar-notif-badge') el.classList.add('pulse');
+                    } else {
+                        el.classList.add('hidden');
+                        if (id !== 'sidebar-notif-badge') el.classList.remove('pulse');
+                    }
+                });
+            }
+
+            function pollCount() {
+                fetch('index.php?page=api&action=get-notification-count')
+                    .then(function(r) { return r.json(); })
+                    .then(function(res) {
+                        if (res.success) {
+                            var newCount = res.unread_count || 0;
+                            if (newCount > _lastCount && newCount > 0) {
+                                // New notifications arrived
+                                if (window.appNotificationPrefs && window.appNotificationPrefs.soundEnabled) {
+                                    playNotifSound();
+                                }
+                                _notifLoaded = false; // Force reload on next open
+                            }
+                            updateBadge(newCount);
+                        }
+                    })
+                    .catch(function(){});
+            }
+
+            function playNotifSound() {
+                try {
+                    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    var osc = ctx.createOscillator();
+                    var gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.frequency.value = 880;
+                    osc.type = 'sine';
+                    gain.gain.value = 0.1;
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                } catch(e) {}
+            }
+
+            // Close panel on outside click
+            document.addEventListener('click', function(e) {
+                if (!_notifOpen) return;
+                var panel = document.getElementById('notification-panel');
+                var mBtn = document.getElementById('mobile-notif-btn');
+                var dBtn = document.getElementById('desktop-notif-btn');
+                if (panel && !panel.contains(e.target) && (!mBtn || !mBtn.contains(e.target)) && (!dBtn || !dBtn.contains(e.target))) {
+                    _notifOpen = false;
+                    panel.classList.add('hidden');
+                }
+            });
+
+            // Init on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initial count check
+                pollCount();
+                // Poll every 60 seconds
+                _pollInterval = setInterval(pollCount, 60000);
+            });
+        })();
+        </script>
 
         <!-- Page Content -->
         <div class="p-2 lg:p-3 xl:p-4">
