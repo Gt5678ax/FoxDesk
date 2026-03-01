@@ -1951,7 +1951,8 @@ include BASE_PATH . '/includes/components/page-header.php';
                             <div class="mt-2 flex items-center gap-2">
                                 <form method="post" class="inline">
                                     <?php echo csrf_field(); ?>
-                                    <button type="submit" name="download_remote_update" class="btn btn-primary btn-sm text-xs"
+                                    <input type="hidden" name="download_remote_update" value="1">
+                                    <button type="submit" class="btn btn-primary btn-sm text-xs"
                                         onclick="this.disabled=true; this.textContent='<?php echo e(t('Downloading...')); ?>'; this.form.submit();">
                                         <?php echo get_icon('cloud-download-alt', 'mr-1'); ?>
                                         <?php echo e(t('Download & Install')); ?>

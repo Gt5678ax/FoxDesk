@@ -43,6 +43,7 @@ screens/
 create_test_user.php
 fix_encoding.*
 bin/seed-demo.php
+debug_*.php
 
 # Claude Code
 .claude/
