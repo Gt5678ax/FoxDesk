@@ -1944,7 +1944,7 @@ include BASE_PATH . '/includes/components/page-header.php';
                             <?php if (!empty($remote_update['changelog'])): ?>
                                 <ul class="mt-1.5 text-xs space-y-0.5" style="color: var(--text-secondary);">
                                     <?php foreach ($remote_update['changelog'] as $change): ?>
-                                        <li>Ă˘â‚¬Ë <?php echo e($change); ?></li>
+                                        <li>— <?php echo e($change); ?></li>
                                     <?php endforeach; ?>
                                 </ul>
                             <?php endif; ?>
