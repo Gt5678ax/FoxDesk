@@ -1,6 +1,6 @@
 {
-    "version": "0.3.46",
-    "date": "2026-02-27",
+    "version": "0.3.48",
+    "date": "2026-03-01",
     "min_php": "8.1",
     "changelog": [
         "Widen Help panel from 480px to 580px to fit translated tab labels",
