@@ -134,33 +134,90 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('admin', ['section' => 'settings', 'tab' => 'system']);
     }
 
-    // Download remote update
-    if (isset($_POST['download_remote_update'])) {
+    // One-click remote install: download + validate + apply
+    if (isset($_POST['install_remote_update'])) {
         $update_info = get_cached_update_info();
-        if ($update_info && !empty($update_info['download_url'])) {
-            $local_path = download_remote_update($update_info['download_url']);
-            if ($local_path !== false) {
-                $validation = validate_update_package($local_path);
-                if ($validation['valid']) {
-                    $_SESSION['pending_update'] = [
-                        'file' => $local_path,
-                        'version' => $validation['version'],
-                        'changelog' => $validation['changelog'] ?? [],
-                        'uploaded_at' => time(),
-                        'source' => 'remote',
-                    ];
-                    $settings_audit('remote_update_downloaded', ['version' => $validation['version']]);
-                    flash(t('Update package downloaded and validated. Please confirm to apply.'), 'success');
-                } else {
-                    @unlink($local_path);
-                    $error_msg = $validation['error'] ?? implode(', ', $validation['errors'] ?? []);
-                    flash(t('Downloaded package is invalid: {error}', ['error' => $error_msg]), 'error');
-                }
-            } else {
-                flash(t('Failed to download update package. Please try again or upload manually.'), 'error');
-            }
-        } else {
+        if (!$update_info || empty($update_info['download_url'])) {
             flash(t('No update available to download.'), 'error');
+            redirect('admin', ['section' => 'settings', 'tab' => 'system']);
+        }
+
+        $local_path = download_remote_update($update_info['download_url']);
+        if ($local_path === false) {
+            flash(t('Failed to download update package. Please try again or upload manually.'), 'error');
+            redirect('admin', ['section' => 'settings', 'tab' => 'system']);
+        }
+
+        $validation = validate_update_package($local_path);
+        if (!$validation['valid']) {
+            @unlink($local_path);
+            $error_msg = $validation['error'] ?? implode(', ', $validation['errors'] ?? []);
+            flash(t('Downloaded package is invalid: {error}', ['error' => $error_msg]), 'error');
+            redirect('admin', ['section' => 'settings', 'tab' => 'system']);
+        }
+
+        $settings_audit('remote_update_downloaded', ['version' => $validation['version']]);
+
+        // Apply immediately
+        try {
+            $result = apply_update($local_path);
+        } catch (Throwable $e) {
+            $result = [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'errors' => [$e->getMessage()],
+                'backup_id' => null
+            ];
+            error_log('settings install_remote_update fatal: ' . $e->getMessage());
+        }
+
+        @unlink($local_path);
+
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
+        if (function_exists('opcache_invalidate')) {
+            foreach ([
+                BASE_PATH . '/index.php',
+                BASE_PATH . '/includes/header.php',
+                BASE_PATH . '/includes/footer.php',
+                BASE_PATH . '/includes/functions.php',
+                BASE_PATH . '/includes/update-functions.php',
+                BASE_PATH . '/pages/admin/settings.php',
+            ] as $f) {
+                @opcache_invalidate($f, true);
+            }
+        }
+
+        if ($result['success']) {
+            $settings_audit('update_applied_from_settings', [
+                'backup_id' => $result['backup_id'] ?? null,
+                'new_version' => $result['new_version'] ?? null,
+            ]);
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                $_SESSION['flash'] = [
+                    'message' => t('Update installed successfully! Backup: {backup}', ['backup' => $result['backup_id']]),
+                    'type' => 'success'
+                ];
+                session_write_close();
+            }
+            $redirect_url = url('admin', ['section' => 'settings', 'tab' => 'system']);
+            echo '<!DOCTYPE html><html><head><meta charset="utf-8">';
+            echo '<meta http-equiv="refresh" content="2;url=' . htmlspecialchars($redirect_url) . '">';
+            echo '<title>Updating...</title>';
+            echo '<style>body{display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;font-family:system-ui,sans-serif;background:#f8fafc;color:#334155}';
+            echo '.box{text-align:center;padding:2rem}.spinner{width:24px;height:24px;border:3px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 1rem}';
+            echo '@keyframes spin{to{transform:rotate(360deg)}}</style></head>';
+            echo '<body><div class="box"><div class="spinner"></div>';
+            echo '<div style="font-weight:600;font-size:1.1rem">Update complete</div>';
+            echo '<div style="color:#64748b;margin-top:.5rem;font-size:.875rem">Redirecting...</div>';
+            echo '</div></body></html>';
+            exit;
+        } else {
+            $settings_audit('update_apply_failed_from_settings', [
+                'error' => $result['error'] ?? '',
+            ], 'error');
+            flash(t('Update failed: {error}', ['error' => $result['error']]), 'error');
         }
         redirect('admin', ['section' => 'settings', 'tab' => 'system']);
     }
@@ -1888,6 +1945,7 @@ include BASE_PATH . '/includes/components/page-header.php';
         $flash_msg = $_SESSION['flash']['message'] ?? '';
         $show_health = (
             stripos($flash_msg, 'Update applied') !== false
+            || stripos($flash_msg, 'Update installed') !== false
             || stripos($flash_msg, 'Rollback') !== false
         );
         if ($show_health && function_exists('post_update_health_check')):
@@ -1929,7 +1987,7 @@ include BASE_PATH . '/includes/components/page-header.php';
                 <div class="rounded-lg px-3 py-2 mb-3 border"
                     style="background: var(--surface-secondary); border-color: var(--primary);">
                     <div class="flex items-start gap-2">
-                        <span class="text-lg flex-shrink-0 mt-0.5">⬆️ </span>
+                        <span class="flex-shrink-0 mt-0.5" style="color: var(--primary);"><?php echo get_icon('arrow-circle-up', 'w-5 h-5'); ?></span>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <span class="text-sm font-semibold" style="color: var(--text-primary);">
@@ -1951,11 +2009,11 @@ include BASE_PATH . '/includes/components/page-header.php';
                             <div class="mt-2 flex items-center gap-2">
                                 <form method="post" class="inline">
                                     <?php echo csrf_field(); ?>
-                                    <input type="hidden" name="download_remote_update" value="1">
+                                    <input type="hidden" name="install_remote_update" value="1">
                                     <button type="submit" class="btn btn-primary btn-sm text-xs"
-                                        onclick="this.disabled=true; this.textContent='<?php echo e(t('Downloading...')); ?>'; this.form.submit();">
+                                        onclick="if(!confirm('<?php echo e(t('Install update? A backup will be created automatically.')); ?>'))return false; this.disabled=true; this.textContent='<?php echo e(t('Installing...')); ?>'; this.form.submit();">
                                         <?php echo get_icon('cloud-download-alt', 'mr-1'); ?>
-                                        <?php echo e(t('Download & Install')); ?>
+                                        <?php echo e(t('Install update')); ?>
                                     </button>
                                 </form>
                                 <span class="text-[11px]" style="color: var(--text-muted);">
@@ -2162,11 +2220,6 @@ include BASE_PATH . '/includes/components/page-header.php';
                                     $backup_creator_id = (int) ($backup['created_by_user_id'] ?? 0);
                                     $backup_creator_name = $backup_creator_names[$backup_creator_id] ?? '';
                                     ?>
-                                    <?php if ($backup_creator_name !== ''): ?>
-                                        <span class="ml-1" style="color: var(--text-muted);">
-                                            <?php echo e(t('by {name}', ['name' => $backup_creator_name])); ?>
-                                        </span>
-                                    <?php endif; ?>
                                     <?php if (!empty($backup['size'])): ?>
                                         <span class="ml-1"
                                             style="color: var(--text-muted);">(<?php echo e(format_filesize($backup['size'])); ?>)</span>
@@ -2270,10 +2323,6 @@ include BASE_PATH . '/includes/components/page-header.php';
                                             $entry_user_id = (int) ($entry['user_id'] ?? 0);
                                             $entry_user_name = $update_history_users[$entry_user_id] ?? '';
                                             ?>
-                                            <?php if ($entry_user_name !== ''): ?>
-                                                <span
-                                                    style="color: var(--text-muted);"><?php echo e(t('by {name}', ['name' => $entry_user_name])); ?></span>
-                                            <?php endif; ?>
                                         </span>
                                         <?php if ($has_entry_details): ?>
                                             <span

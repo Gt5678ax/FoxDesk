@@ -536,7 +536,7 @@ if (is_admin() && file_exists(__DIR__ . '/update-check-functions.php')) {
         <div class="foxdesk-update-bar" id="foxdeskUpdateBar">
             <div class="foxdesk-update-bar-inner">
                 <div class="foxdesk-update-bar-content">
-                    <span class="foxdesk-update-bar-icon">đź¦Š</span>
+                    <span class="foxdesk-update-bar-icon"><?php echo get_icon('arrow-circle-up'); ?></span>
                     <span class="foxdesk-update-bar-text">
                         <?php echo e(t('FoxDesk {version} is available!', ['version' => $_foxdesk_update_info['version']])); ?>
                     </span>
@@ -544,7 +544,7 @@ if (is_admin() && file_exists(__DIR__ . '/update-check-functions.php')) {
                         <?php echo e(t('Update now')); ?>
                     </a>
                 </div>
-                <button type="button" class="foxdesk-update-bar-dismiss" onclick="dismissFoxDeskUpdate('<?php echo e($_foxdesk_update_info['version']); ?>')" title="<?php echo e(t('Dismiss')); ?>">âś•</button>
+                <button type="button" class="foxdesk-update-bar-dismiss" onclick="dismissFoxDeskUpdate('<?php echo e($_foxdesk_update_info['version']); ?>')" title="<?php echo e(t('Dismiss')); ?>">&times;</button>
             </div>
         </div>
         <script>

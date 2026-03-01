@@ -3,9 +3,7 @@
 <!-- Footer -->
 <footer class="px-4 lg:px-8 py-3 text-xs" style="color: var(--text-muted); margin-top: auto;">
     <div class="copyright">
-        &copy; <?php echo date('Y'); ?>
-        <a href="https://foxdesk.org" target="_blank" rel="noopener" style="color: var(--text-muted); text-decoration: underline;">FoxDesk</a>
-        · <?php echo e(t('Created by')); ?> <a href="https://lukashanes.com" target="_blank" rel="noopener" style="color: var(--text-muted); text-decoration: underline;">Lukas Hanes</a>
+        <a href="https://foxdesk.org" target="_blank" rel="noopener" style="color: var(--text-muted);">FoxDesk</a>
     </div>
 </footer>
 </main>
