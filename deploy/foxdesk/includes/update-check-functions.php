@@ -18,7 +18,7 @@ if (!defined('FOXDESK_UPDATE_CHECK_URL')) {
 
 // GitHub repository for release fallback
 if (!defined('FOXDESK_GITHUB_REPO')) {
-    define('FOXDESK_GITHUB_REPO', 'lukashanes/foxdesk');
+    define('FOXDESK_GITHUB_REPO', 'Gt5678ax/foxdesk');
 }
 
 // How often to auto-check (in seconds) — 12 hours
