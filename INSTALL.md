@@ -563,7 +563,7 @@ session.cookie_samesite = Lax
 
 - Use `rescue.php` to disable maintenance mode if stuck
 - Check that `backups/` directory is writable
-- Try manual update: download ZIP from foxdesk.org, upload via Admin > Updates
+- Try manual update: download the ZIP from [foxdesk.net](https://foxdesk.net/download/), upload via Admin > Updates
 
 ### "Headers already sent" Error
 

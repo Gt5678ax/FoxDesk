@@ -3,7 +3,7 @@
  * Remote Update Check Functions
  *
  * Checks for new versions via:
- *   1. foxdesk.org/api/version-check (primary — custom server)
+ *   1. foxdesk.net/api/version-check (primary — custom server)
  *   2. GitHub Releases API (fallback — always available)
  *
  * When a newer version is found, the admin sees a notification banner
@@ -13,7 +13,7 @@
 
 // Remote API endpoint for version check (primary)
 if (!defined('FOXDESK_UPDATE_CHECK_URL')) {
-    define('FOXDESK_UPDATE_CHECK_URL', 'https://foxdesk.org/api/version-check');
+    define('FOXDESK_UPDATE_CHECK_URL', 'https://foxdesk.net/api/version-check');
 }
 
 // GitHub repository for release fallback
@@ -55,7 +55,7 @@ function check_for_updates(bool $force = false)
         }
     }
 
-    // Make HTTP request to remote API (tries foxdesk.org first, then GitHub)
+    // Make HTTP request to remote API (tries foxdesk.net first, then GitHub)
     $response = fetch_remote_version_info();
     if ($response === false) {
         // Save the timestamp so we don't retry immediately on failure
@@ -122,13 +122,13 @@ function get_cached_update_info()
 
 /**
  * Fetch version info from the remote FoxDesk update sources.
- * Checks both foxdesk.org and GitHub, then returns the newest valid version.
+ * Checks foxdesk.net and GitHub, then returns the newest valid version.
  *
  * @return array|false Parsed response with latest_version, download_url, changelog, etc.
  */
 function fetch_remote_version_info()
 {
-    // 1. Try foxdesk.org first (custom endpoint — may not exist yet)
+    // 1. Try foxdesk.net first (custom endpoint — may not exist yet)
     $candidates = [];
 
     $primary = fetch_foxdesk_org_version_info();
@@ -175,7 +175,7 @@ function fetch_remote_version_info()
 }
 
 /**
- * Fetch version info from foxdesk.org custom API.
+ * Fetch version info from the FoxDesk custom API.
  *
  * @return array|false Parsed JSON response, or false on failure.
  */
@@ -206,7 +206,7 @@ function fetch_foxdesk_org_version_info()
 
     $response = @file_get_contents($full_url, false, $context);
     if ($response === false) {
-        // Silently fall through to GitHub — foxdesk.org may not be set up yet
+        // Silently fall through to GitHub — the custom endpoint may not be set up yet
         return false;
     }
 
@@ -395,7 +395,7 @@ function parse_github_release_body(string $body): array
  * Download an update package from a remote URL.
  *
  * Allowed sources:
- *   - foxdesk.org (HTTPS)
+ *   - foxdesk.net (HTTPS; foxdesk.org remains a legacy alias)
  *   - GitHub (github.com, objects.githubusercontent.com)
  *
  * @param string $url The URL to download from.
@@ -413,6 +413,7 @@ function download_remote_update(string $url): string|false
     $scheme = strtolower($parsed['scheme'] ?? '');
 
     $allowed_hosts = [
+        'foxdesk.net',
         'foxdesk.org',
         'github.com',
         'objects.githubusercontent.com',

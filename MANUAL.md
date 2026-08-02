@@ -566,7 +566,7 @@ Click any user name to see their activity:
 
 ### Auto-Update System
 
-FoxDesk checks for updates from foxdesk.org (primary) and GitHub releases (fallback).
+FoxDesk checks for updates from foxdesk.net (primary) and GitHub releases (fallback).
 
 **Update process:**
 1. Admin sees update notification banner
@@ -579,7 +579,7 @@ FoxDesk checks for updates from foxdesk.org (primary) and GitHub releases (fallb
 ### Manual Update
 
 If auto-update fails or your server can't reach the internet:
-1. Download the update ZIP from foxdesk.org
+1. Download the update ZIP from [foxdesk.net](https://foxdesk.net/download/)
 2. Go to Admin > Settings > Updates
 3. Upload the ZIP manually
 4. FoxDesk applies the update
@@ -696,5 +696,5 @@ FoxDesk logs security events:
 
 ### Getting Help
 
-- Documentation: [foxdesk.org](https://foxdesk.org)
+- Documentation: [foxdesk.net](https://foxdesk.net)
 - Source code: [github.com/lukashanes/foxdesk](https://github.com/lukashanes/foxdesk)

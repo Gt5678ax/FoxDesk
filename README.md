@@ -2,7 +2,7 @@
 
 Open-source helpdesk and ticketing system built with PHP, Tailwind CSS, and Alpine.js.
 
-**Website:** [foxdesk.org](https://foxdesk.org)
+**Website:** [foxdesk.net](https://foxdesk.net)
 **Current Version:** `0.3.137` (`2026-07-26`)
 
 ## Release Boundary
@@ -95,7 +95,7 @@ updates, IMAP/self-hosted operations, and the one-way self-hosted to SaaS migrat
 - One-click update from admin panel
 - Automatic backup before each update
 - Manual ZIP upload for offline environments
-- Dual-source checking (foxdesk.org + GitHub)
+- Dual-source checking (foxdesk.net + GitHub)
 
 **Security & Ops**
 - TOTP 2FA with backup codes and optional per-role enforcement
