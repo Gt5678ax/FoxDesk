@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "edition": "self-hosted",
+  "shared": [
+    {"semanticId": "runtime-schema-baseline", "file": "2026072001_runtime_schema_to_migration.php", "sha256": "b5bc5246026cb5e3a94b26ee8e6dd541e026170f3ecd611bd79d962b9b6287c1"},
+    {"semanticId": "pending-deletions", "file": "2026072002_pending_deletions.sql", "sha256": "6373926a52c29a48cc79d0c1919f769e779b8590d742bfb166ef0d0472db2cb4"},
+    {"semanticId": "canonical-done-status", "file": "2026072003_canonical_done_status.php", "sha256": "324e50c0764faf7287922d8fae9afad41c65f46f5f4748d18abfdd926ed89176"},
+    {"semanticId": "agent-work-log-metadata", "file": "2026072501_agent_work_log_metadata.php", "sha256": "d1dd9f2c891872837125d4c39d099a66ec456744dc371977309990617d5b8273"},
+    {"semanticId": "locale-tag-width", "file": "2026072601_locale_tag_width.php", "sha256": "98ae49726184b6ef6b793253dc10dc39d6b414d324e38c19626bdfe326ef6d47"}
+  ],
+  "editionOnly": []
+}

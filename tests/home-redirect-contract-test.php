@@ -28,6 +28,9 @@ $composed_surfaces = [
         'includes/components/new-ticket-form.php',
         'includes/components/new-ticket-assets.php',
     ],
+    'pages/admin/reports.php' => [
+        'includes/modules/reports/report-page-controller.php',
+    ],
 ];
 
 $read_surface = static function (string $file) use ($root, $composed_surfaces): string {

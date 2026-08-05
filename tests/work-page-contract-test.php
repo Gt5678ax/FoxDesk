@@ -24,7 +24,7 @@ assert_work_page(strpos($work, 'class="work-custom-period"') < strpos($work, 'cl
 assert_work_page(strpos($work, 'data-work-week-chart') !== false, 'work page must render the weekly activity chart.');
 assert_work_page(strpos($timeModel, "'last_30_days' => t('Last 30 days')") !== false, 'work time periods must include the last 30 days.');
 assert_work_page(strpos($work, "t('Active now')") !== false, 'work page must show active timer time as the fourth KPI.');
-assert_work_page(strpos($work, "t('Worked time')") !== false, 'work page must use a concise worked-time chart title.');
+assert_work_page(strpos($work, "t('Work overview')") !== false, 'work page must use the localized worked-time overview title.');
 assert_work_page(strpos($work, 'calculate_timer_elapsed') !== false, 'active timer KPI must account for paused timers.');
 assert_work_page(strpos($work, 'data-work-current') !== false, 'work page must expose quick access to current in-progress work.');
 assert_work_page(strpos($work, 'data-work-team-time') !== false, 'admin work page must expose a stable team time hook.');

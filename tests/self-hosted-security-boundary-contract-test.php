@@ -39,7 +39,21 @@ foreach ([
     $assert(!is_file($root . '/' . $saas_route), "Self-hosted must not expose SaaS-only route {$saas_route}.");
 }
 
-$assert(!is_file($root . '/includes/tenant-functions.php'), 'Self-hosted must not grow the SaaS tenant helper layer.');
+foreach ([
+    'includes/tenant-functions.php',
+    'includes/billing-functions.php',
+    'includes/signup-functions.php',
+    'includes/automation-usage-functions.php',
+    'includes/storage-functions.php',
+    'includes/email-routing-functions.php',
+    'includes/marketing-events.php',
+    'includes/api/migration-handler.php',
+    'includes/modules/agent/pairing.php',
+    'includes/modules/agent/thread-report.php',
+] as $saas_module) {
+    $assert(!is_file($root . '/' . $saas_module), "Self-hosted must not ship SaaS-only module {$saas_module}.");
+}
+
 $assert(!str_contains($database, 'tenant_scope_mutation_where'), 'Self-hosted database helper must stay single-tenant/simple.');
 $assert(str_contains($migration, 'tenant lifecycle stay in the separate foxdesk_saas repository'), 'Migration bridge must keep SaaS tenant lifecycle out of self-hosted.');
 

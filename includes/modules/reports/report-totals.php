@@ -132,13 +132,7 @@ function report_entry_model_minutes(array $entry, array $template): int
         return max(0, (int) $entry['actual_minutes']);
     }
 
-    $minutes = max(0, (int) ($entry['duration_minutes'] ?? 0));
-    $rounding = max(0, (int) ($template['rounding_minutes'] ?? 0));
-    if ($rounding > 0 && function_exists('round_minutes_nearest')) {
-        return round_minutes_nearest($minutes, $rounding);
-    }
-
-    return $minutes;
+    return max(0, (int) ($entry['duration_minutes'] ?? 0));
 }
 
 function report_entry_model_billable_minutes(array $entry, array $template): int
@@ -151,7 +145,13 @@ function report_entry_model_billable_minutes(array $entry, array $template): int
         return 0;
     }
 
-    return report_entry_model_minutes($entry, $template);
+    $minutes = report_entry_model_minutes($entry, $template);
+    $rounding = max(0, (int) ($template['rounding_minutes'] ?? 0));
+    if ($rounding > 1 && function_exists('round_minutes_nearest')) {
+        return round_minutes_nearest($minutes, $rounding);
+    }
+
+    return $minutes;
 }
 
 function report_entry_model_amount(array $entry, array $template): float

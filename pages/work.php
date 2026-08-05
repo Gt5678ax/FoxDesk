@@ -337,13 +337,13 @@ require_once BASE_PATH . '/includes/header.php';
     ?>
     <div class="work-week-chart" data-work-week-chart>
         <div class="work-week-chart__header">
-            <h3><?php echo e(t('Hours by day')); ?></h3>
+            <h3><?php echo e(t('Work overview')); ?></h3>
             <span><?php echo e($selected_period_label); ?> · <?php echo e(format_duration_minutes((int) ($period_chart['total_minutes'] ?? 0))); ?></span>
         </div>
         <div class="work-week-chart__bars"
              style="--chart-day-count: <?php echo e((string) max(1, count($chart_days))); ?>;"
              role="list"
-             aria-label="<?php echo e(t('Hours by day')); ?>">
+             aria-label="<?php echo e(t('Work overview')); ?>">
             <?php foreach ($chart_days as $day): ?>
                 <?php
                 $day_minutes = (int) ($day['minutes'] ?? 0);
