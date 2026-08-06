@@ -18,7 +18,9 @@ if (result.errors.length > 0) {
 const output = `${result.styles}\n`;
 if (process.argv.includes('--check')) {
   const current = fs.existsSync(outputPath) ? fs.readFileSync(outputPath, 'utf8') : '';
-  if (current !== output) {
+  const normalizedCurrent = current.replace(/\r\n?/g, '\n');
+  const normalizedOutput = output.replace(/\r\n?/g, '\n');
+  if (normalizedCurrent !== normalizedOutput) {
     console.error('assets/css/theme.min.css is stale. Run npm run build:css.');
     process.exit(1);
   }

@@ -1,7 +1,9 @@
 # FoxDesk Edition Parity Matrix
 
 This self-hosted repository follows the same shared helpdesk concepts as
-FoxDesk SaaS, but it is not the hosted platform repository.
+FoxDesk SaaS, but it is not the hosted platform repository. It remains a
+standalone open-source product and never receives the private paid-service
+implementation.
 
 ## Classification Rules
 
@@ -70,3 +72,34 @@ The public self-hosted app must not expose these SaaS-only surfaces:
 - Stripe customer/subscription administration
 - hosted R2 or Cloudflare production secrets
 - internal SaaS pricing operations
+- `includes/tenant-functions.php`
+- `includes/billing-functions.php`
+- `includes/signup-functions.php`
+- `includes/automation-usage-functions.php`
+- `includes/storage-functions.php`
+- `includes/email-routing-functions.php`
+- `includes/marketing-events.php`
+- `includes/api/migration-handler.php`
+- `includes/modules/agent/pairing.php`
+- `includes/modules/agent/thread-report.php`
+
+The self-hosted **Billing review** is not FoxDesk subscription billing. It only
+turns the instance owner's tracked work into a client-facing report using the
+owner's own rates. Stripe checkout, trials, subscriptions, VAT collection and
+FoxDesk account billing exist only in the private SaaS repository.
+
+## Automated Enforcement
+
+- `config/core-parity-manifest.json` classifies audited paths as shared by
+  default, explicitly lists self-hosted overlays, and fails when a forbidden
+  SaaS route or backend module appears in the public checkout.
+- `config/shared-behavior-contract.json` is byte-equivalent between editions
+  and protects actual versus billable time, notification boundaries, workflow
+  keys, locale count, and the shared low-level Agent API.
+- `config/migration-parity.json` maps differently numbered migration files to
+  stable semantic IDs and checksums.
+- `npm run test:core-parity` validates this repository locally. The private
+  SaaS CI checks the pinned public commit with
+  `npm run test:core-parity -- --counterpart=/path/to/foxdesk`.
+- Inventory-only drift remains a warning until every historical path has been
+  reviewed and classified; `--strict-inventory` turns it into a failure.

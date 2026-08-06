@@ -3116,26 +3116,14 @@ white-space: nowrap;
 .ticket-sidebar {
 display: flex;
 flex-direction: column;
-gap: 0;
+gap: 1rem;
 }
 .ticket-sidebar > .card {
 overflow: hidden;
 border: 1px solid var(--border-light);
-border-radius: 0;
-background: var(--surface-primary);
-box-shadow: none;
-border-bottom: 0;
-}
-.ticket-sidebar > .card:first-child {
-border-radius: var(--fd-radius-card) var(--fd-radius-card) 0 0;
-}
-.ticket-sidebar > .card:last-child {
-border-bottom: 1px solid var(--border-light);
-border-radius: 0 0 var(--fd-radius-card) var(--fd-radius-card);
-}
-.ticket-sidebar > .card:only-child {
 border-radius: var(--fd-radius-card);
-border-bottom: 1px solid var(--border-light);
+background: var(--surface-primary);
+box-shadow: var(--shadow-sm);
 }
 .ticket-side-heading {
 display: flex;

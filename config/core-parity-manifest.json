@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "edition": "self-hosted",
+  "sharedContractVersion": "2026-08-05.1",
+  "auditRoots": ["includes", "pages", "assets/js", "bin", "config", "migrations"],
+  "defaultClassification": "shared",
+  "forbiddenPaths": [
+    "pages/platform.php",
+    "pages/billing.php",
+    "pages/cloud.php",
+    "pages/signup.php",
+    "pages/stripe-webhook.php",
+    "includes/tenant-functions.php",
+    "includes/billing-functions.php",
+    "includes/signup-functions.php",
+    "includes/automation-usage-functions.php",
+    "includes/storage-functions.php",
+    "includes/email-routing-functions.php",
+    "includes/marketing-events.php",
+    "includes/api/migration-handler.php",
+    "includes/modules/agent/pairing.php",
+    "includes/modules/agent/thread-report.php"
+  ],
+  "overlayRules": [
+    {"classification": "self-hosted-overlay", "pattern": "pages/admin/migration-export.php"},
+    {"classification": "self-hosted-overlay", "pattern": "bin/ingest-emails.php"},
+    {"classification": "self-hosted-overlay", "pattern": "bin/sync-to-cloud.php"},
+    {"classification": "self-hosted-overlay", "pattern": "includes/email-ingest-functions.php"},
+    {"classification": "self-hosted-overlay", "pattern": "includes/pseudo-cron.php"},
+    {"classification": "self-hosted-overlay", "pattern": "includes/update-check-functions.php"},
+    {"classification": "self-hosted-overlay", "pattern": "includes/update-functions.php"},
+    {"classification": "self-hosted-overlay", "pattern": "includes/modules/settings/settings-updates.php"}
+  ],
+  "exactParityFiles": [
+    "config/shared-behavior-contract.json",
+    "tests/shared-behavior-contract-test.php",
+    "tests/notification-policy-test.php",
+    "includes/modules/notifications/notification-policy.php",
+    "includes/modules/reports/report-totals.php",
+    "locales/registry.json"
+  ]
+}

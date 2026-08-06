@@ -13,6 +13,9 @@ $assert(is_file($matrix_path), 'Self-hosted edition parity matrix must exist.');
 
 $matrix = file_get_contents($matrix_path);
 $assert($matrix !== false, 'Unable to read self-hosted edition parity matrix.');
+$manifest = json_decode((string) file_get_contents($root . '/config/core-parity-manifest.json'), true);
+$assert(is_array($manifest), 'Self-hosted core parity manifest must be valid JSON.');
+$forbidden_paths = $manifest['forbiddenPaths'] ?? [];
 
 foreach ([
     '| Work | shared |',
@@ -51,6 +54,24 @@ foreach ([
 ] as $route) {
     $assert(!is_file($root . '/' . $route), 'Self-hosted repository must not expose SaaS-only route ' . $route . '.');
     $assert(str_contains($matrix, $route), 'Self-hosted exclusion list must name ' . $route . '.');
+    $assert(in_array($route, $forbidden_paths, true), 'Core parity manifest must reject SaaS-only route ' . $route . '.');
+}
+
+foreach ([
+    'includes/tenant-functions.php',
+    'includes/billing-functions.php',
+    'includes/signup-functions.php',
+    'includes/automation-usage-functions.php',
+    'includes/storage-functions.php',
+    'includes/email-routing-functions.php',
+    'includes/marketing-events.php',
+    'includes/api/migration-handler.php',
+    'includes/modules/agent/pairing.php',
+    'includes/modules/agent/thread-report.php',
+] as $module) {
+    $assert(!is_file($root . '/' . $module), 'Self-hosted repository must not contain SaaS-only module ' . $module . '.');
+    $assert(str_contains($matrix, $module), 'Self-hosted exclusion list must name ' . $module . '.');
+    $assert(in_array($module, $forbidden_paths, true), 'Core parity manifest must reject SaaS-only module ' . $module . '.');
 }
 
 foreach ([

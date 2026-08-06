@@ -27,3 +27,9 @@ jobs:
 
       - name: Localization and RTL contracts
         run: npm run test:i18n
+
+      - name: Shared FoxDesk behavior contract
+        run: npm run test:shared-behavior
+
+      - name: Validate self-hosted parity metadata
+        run: npm run test:core-parity

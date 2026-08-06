@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "contractId": "foxdesk-core-2026-08-05.1",
+  "reporting": {
+    "actualTimeUsesTrackedMinutes": true,
+    "actualTimeIsNeverRounded": true,
+    "billableTimeMayUseConfiguredRounding": true,
+    "filters": ["clients", "agents", "tags", "timeRange"]
+  },
+  "notifications": {
+    "oneActionAtMostOneMeaningfulEmail": true,
+    "actorDoesNotReceiveAdministrativeCopy": true,
+    "recipientMustBelongToCurrentWorkspace": true
+  },
+  "workflow": {
+    "workQueues": ["mine", "unassigned", "overdue", "waiting", "done_today"],
+    "ticketViews": ["open", "waiting", "done", "all", "archived"]
+  },
+  "localization": {
+    "applicationLocaleCount": 24,
+    "registryPath": "locales/registry.json"
+  },
+  "agents": {
+    "lowLevelApiIsShared": true,
+    "threadReportPairingIsSaasOverlay": true
+  }
+}

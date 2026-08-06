@@ -1,8 +1,11 @@
 {
-    "version": "0.3.137",
-    "date": "2026-07-26",
+    "version": "0.3.138",
+    "date": "2026-08-05",
     "min_php": "8.1",
     "changelog": [
+        "Report previews now keep real tracked time separate from optional billable rounding",
+        "The self-hosted release boundary now rejects private SaaS routes and backend modules",
+        "Migration parity now uses stable semantic IDs and verified checksums",
         "FoxDesk now ships complete runtime catalogs for 24 locales",
         "Arabic, Hebrew, Persian, and Urdu receive right-to-left layout, bidi isolation, and semantic directional icons",
         "Chinese, Japanese, and Korean input now respects IME composition and CJK-aware search behavior",

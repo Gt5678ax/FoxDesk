@@ -3,14 +3,19 @@
 Open-source helpdesk and ticketing system built with PHP, Tailwind CSS, and Alpine.js.
 
 **Website:** [foxdesk.net](https://foxdesk.net)
-**Current Version:** `0.3.137` (`2026-07-26`)
+**Current Version:** `0.3.138` (`2026-08-05`)
 
 ## Release Boundary
 
 This repository is the public self-hosted PHP FoxDesk release channel.
-Hosted product work is owned by the FoxDesk SaaS repository, including the SaaS
-platform console, billing internals, managed Cloudflare/R2 deployment, and
-future native mobile API work.
+Hosted product work is owned by the private FoxDesk SaaS repository, including
+FoxDesk subscription billing, trials, tenant lifecycle, the operator platform,
+managed Cloudflare/R2 deployment, and native mobile API work. None of those
+paid-service modules are published from this repository.
+
+The report rate and billable-time features below are local client-reporting
+tools. They do not implement FoxDesk subscriptions, Stripe checkout, trials, or
+SaaS account billing.
 
 Self-hosted changes should focus on security, local installation, public
 updates, IMAP/self-hosted operations, and the one-way self-hosted to SaaS migration bridge.

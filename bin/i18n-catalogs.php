@@ -203,7 +203,9 @@ foreach ($catalogs as $locale => $messages) {
     $runtimePath = $runtimeDirectory . '/' . $locale . '.php';
     if ($command === '--check') {
         $actual = is_file($runtimePath) ? (string) file_get_contents($runtimePath) : '';
-        if (!hash_equals($expected, $actual)) {
+        $expectedNormalized = str_replace(["\r\n", "\r"], "\n", $expected);
+        $actualNormalized = str_replace(["\r\n", "\r"], "\n", $actual);
+        if (!hash_equals($expectedNormalized, $actualNormalized)) {
             $stale[] = $runtimePath;
         }
         continue;

@@ -1,6 +1,7 @@
 <?php
 
 define('BASE_PATH', dirname(__DIR__));
+require BASE_PATH . '/includes/locale-functions.php';
 require BASE_PATH . '/includes/modules/agent/operating-instructions.php';
 
 $assert = static function (bool $condition, string $message): void {
