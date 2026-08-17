@@ -30,9 +30,20 @@ function normalize(relativePath) {
 function sha256(filePath, normalizeText = false) {
   let content = fs.readFileSync(filePath);
   if (normalizeText) {
-    content = Buffer.from(content.toString('utf8').replace(/\r\n/g, '\n'));
+    content = Buffer.from(content.toString('utf8').replace(/\r\n|\r/g, '\n'));
   }
   return crypto.createHash('sha256').update(content).digest('hex');
+}
+
+function migrationSha256Variants(filePath) {
+  const content = fs.readFileSync(filePath).toString('utf8');
+  const normalized = content.replace(/\r\n|\r/g, '\n');
+  const crlf = normalized.replace(/\n/g, '\r\n');
+  return new Set([
+    crypto.createHash('sha256').update(normalized).digest('hex'),
+    crypto.createHash('sha256').update(content).digest('hex'),
+    crypto.createHash('sha256').update(crlf).digest('hex'),
+  ]);
 }
 
 function globRegex(pattern) {
@@ -146,8 +157,10 @@ function validateMigrationMap(baseRoot, map) {
       errors.push(`Mapped migration does not exist in ${map.edition}: ${entry.file}`);
       continue;
     }
-    const actualHash = sha256(filePath);
-    if (actualHash !== entry.sha256) {
+    // Older parity maps were generated from CRLF checkouts. Accept only the
+    // raw, canonical LF, and equivalent CRLF digests so newline materialization
+    // cannot make an otherwise identical migration fail on Linux or Windows.
+    if (!migrationSha256Variants(filePath).has(entry.sha256)) {
       errors.push(`Migration checksum drift in ${map.edition}: ${entry.file}`);
     }
   }

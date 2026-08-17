@@ -2,8 +2,11 @@
 
 Open-source helpdesk and ticketing system built with PHP, Tailwind CSS, and Alpine.js.
 
-**Website:** [foxdesk.net](https://foxdesk.net)
-**Current Version:** `0.3.138` (`2026-08-05`)
+**Website:** [foxdesk.net](https://foxdesk.net/?utm_source=github.com&utm_medium=referral&utm_campaign=foxdesk_open_source)
+
+**Latest packaged release:** [`0.3.137`](https://github.com/lukashanes/foxdesk/releases/tag/v0.3.137) (`2026-07-26`)
+
+**Development version on `main`:** `0.3.138`
 
 ## Release Boundary
 
@@ -93,7 +96,9 @@ updates, IMAP/self-hosted operations, and the one-way self-hosted to SaaS migrat
 - Dynamic app manifest with custom icons
 
 **Multi-language**
-- English, Czech, German, Spanish, Italian
+- 24 application languages in the shared locale registry
+- English, Czech, German, Spanish, and Italian are stable in the self-hosted channel; the other 19 translations are marked beta
+- RTL layouts for Arabic, Hebrew, Persian, and Urdu, plus CJK input handling
 - Per-user language preference
 
 **Auto-Updates**
@@ -121,7 +126,17 @@ updates, IMAP/self-hosted operations, and the one-way self-hosted to SaaS migrat
 
 ## Screenshots
 
-Current self-hosted UI screenshots are stored in [docs/screenshots](docs/screenshots).
+These screenshots show the public self-hosted edition with local demonstration data.
+
+| Dashboard | Ticket detail |
+| --- | --- |
+| [![FoxDesk self-hosted dashboard](docs/screenshots/dashboard-light.png)](docs/screenshots/dashboard-light.png) | [![FoxDesk self-hosted ticket detail](docs/screenshots/ticket-detail-light.png)](docs/screenshots/ticket-detail-light.png) |
+
+| Tickets | Reports |
+| --- | --- |
+| [![FoxDesk self-hosted ticket list](docs/screenshots/tickets-light.png)](docs/screenshots/tickets-light.png) | [![FoxDesk self-hosted reports](docs/screenshots/reports-light.png)](docs/screenshots/reports-light.png) |
+
+The full light and dark screenshot set is stored in [docs/screenshots](docs/screenshots).
 Regenerate them from a clean local install with:
 
 ```bash
