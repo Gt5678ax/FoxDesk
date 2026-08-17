@@ -39,13 +39,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
 
             if (isset($_POST['language'])) {
-                $requested_language = normalize_locale_tag($_POST['language']);
-                if ($requested_language === null) {
+                $language_preference = trim((string) $_POST['language']);
+                $requested_language = $language_preference === ''
+                    ? null
+                    : normalize_locale_tag($language_preference);
+                if ($language_preference !== '' && $requested_language === null) {
                     flash(t('Language not supported.'), 'error');
                     redirect('profile');
                 }
                 $updates['language'] = $requested_language;
-                $_SESSION['lang'] = $requested_language;
+                $_SESSION['lang'] = $requested_language ?? foxdesk_workspace_language();
+                unset($_SESSION['lang_override']);
             }
 
             if ($contact_phone_column_exists) {
@@ -503,11 +507,16 @@ include BASE_PATH . '/includes/components/page-header.php';
                 <div>
                     <label for="profile-language" class="block text-sm font-medium mb-1 text-theme-secondary"><?php echo e(t('Language')); ?></label>
                     <select name="language" id="profile-language" class="form-select w-full sm:w-1/2">
+                        <option value="" <?php echo foxdesk_user_language_override($user) === null ? 'selected' : ''; ?>>
+                            <?php echo e(t('Use workspace default ({language})', [
+                                'language' => foxdesk_locale_option_label(foxdesk_workspace_language()),
+                            ])); ?>
+                        </option>
                         <?php foreach (get_supported_languages() as $code => $lang_info): ?>
-                            <option value="<?php echo e($code); ?>" <?php echo ($user['language'] ?? 'en') === $code ? 'selected' : ''; ?>><?php echo e(foxdesk_locale_option_label($code)); ?></option>
+                            <option value="<?php echo e($code); ?>" <?php echo foxdesk_user_language_override($user) === $code ? 'selected' : ''; ?>><?php echo e(foxdesk_locale_option_label($code)); ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <p class="text-xs mt-1 text-theme-muted"><?php echo e(t('Changes the language of the entire application interface.')); ?></p>
+                    <p class="text-xs mt-1 text-theme-muted"><?php echo e(t('Choose a personal language or follow the workspace default.')); ?></p>
                 </div>
 
                 <button type="submit" name="update_profile" class="btn btn-primary">

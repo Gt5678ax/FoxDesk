@@ -72,10 +72,13 @@ updates, IMAP/self-hosted operations, and the one-way self-hosted to SaaS migrat
 - Endpoints for ticket creation, lookup, status updates, comments, time logs, and metadata lists
 
 **Email Integration**
+- Microsoft 365 / Outlook OAuth2 integration for inbound and outbound mail
 - IMAP email-to-ticket ingest with sender whitelist
 - Inbound email attachments linked directly to ticket threads
 - SMTP notifications with customizable templates
 - CC/BCC recipients on ticket replies
+
+See [Microsoft 365 and Outlook mail setup](docs/MICROSOFT_365_MAIL.md).
 
 **User Roles**
 - **Admin** — Full access, settings, user management, reports, AI agents

@@ -86,6 +86,7 @@ try {
         'recurring_tasks' => ['due_days', 'paused_at', 'resume_date', 'tags'],
         'report_templates' => ['custom_billable_rate', 'expires_at', 'schedule_enabled', 'agent_ids'],
         'email_ingest_logs' => ['sender_email', 'subject', 'ticket_id'],
+        'email_provider_connections' => ['tenant_id', 'client_secret_ciphertext', 'access_token_ciphertext', 'refresh_token_ciphertext'],
         'notifications' => ['actor_id', 'data', 'is_resolved'],
         'ticket_time_entries' => ['worked_on', 'time_precision'],
     ];
@@ -113,7 +114,13 @@ try {
             throw new RuntimeException("{$table}.{$column} was not widened to VARCHAR(35).");
         }
     }
-    foreach (['recurring_task_runs', 'ticket_history', 'agent_client_billable_rates', 'push_subscriptions', 'pending_deletions'] as $table) {
+    $userLanguage = $db->query("SHOW COLUMNS FROM users LIKE 'language'")->fetch(PDO::FETCH_ASSOC);
+    if (($userLanguage['Null'] ?? '') !== 'YES'
+        || !array_key_exists('Default', $userLanguage)
+        || $userLanguage['Default'] !== null) {
+        throw new RuntimeException('users.language must allow NULL workspace inheritance: ' . json_encode($userLanguage));
+    }
+    foreach (['recurring_task_runs', 'ticket_history', 'agent_client_billable_rates', 'push_subscriptions', 'pending_deletions', 'email_provider_connections'] as $table) {
         $stmt = $db->prepare('SHOW TABLES LIKE ?');
         $stmt->execute([$table]);
         if (!$stmt->fetchColumn()) {

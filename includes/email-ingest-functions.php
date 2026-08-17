@@ -203,6 +203,12 @@ function email_ingest_run($options = [])
         return $result;
     }
 
+    require_once BASE_PATH . '/includes/microsoft-mail-functions.php';
+    if (microsoft_mail_is_active('inbound')) {
+        require_once BASE_PATH . '/includes/microsoft-email-ingest.php';
+        return microsoft_email_ingest_run((array) $options);
+    }
+
     $cfg = email_ingest_config();
     if (empty($cfg['enabled'])) {
         $result['disabled'] = true;
@@ -285,6 +291,16 @@ function email_ingest_run($options = [])
  */
 function email_ingest_test_connection($overrides = [])
 {
+    require_once BASE_PATH . '/includes/microsoft-mail-functions.php';
+    if (microsoft_mail_is_active('inbound')) {
+        $profile = microsoft_mail_test_connection();
+        return [
+            'messages' => 0,
+            'mailbox' => (string) ($profile['mailbox_email'] ?? 'Microsoft 365'),
+            'provider' => 'microsoft_graph',
+        ];
+    }
+
     $cfg = array_merge(email_ingest_config(), $overrides);
     email_ingest_validate_config($cfg);
 
@@ -1074,7 +1090,7 @@ function email_ingest_resolve_requester_user_id($email, $allowed_sender)
         'first_name' => $first_name,
         'last_name' => '',
         'role' => 'user',
-        'language' => 'en',
+        'language' => null,
         'is_active' => 1,
         'created_at' => date('Y-m-d H:i:s'),
     ]);
@@ -1126,6 +1142,7 @@ function email_ingest_require_mailer_dependencies()
     }
 
     require_once BASE_PATH . '/includes/settings-functions.php';
+    require_once BASE_PATH . '/includes/locale-functions.php';
     require_once BASE_PATH . '/includes/mailer.php';
     $loaded = true;
 }
@@ -1175,8 +1192,8 @@ function email_ingest_send_requester_notifications($ticket_id, $ticket_created, 
 
     $settings = get_settings();
     $lang = function_exists('normalize_locale_tag')
-        ? (normalize_locale_tag($user['language'] ?? 'en') ?? 'en')
-        : strtolower(trim((string) ($user['language'] ?? 'en')));
+        ? foxdesk_effective_user_language($user)
+        : strtolower(trim((string) ($user['language'] ?? foxdesk_workspace_language())));
 
     $ticket_code = email_ingest_ticket_code((int) $ticket['id']);
     $ticket_param = !empty($ticket['hash']) ? 't=' . urlencode($ticket['hash']) : 'id=' . (int) $ticket['id'];

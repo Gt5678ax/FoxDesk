@@ -445,12 +445,12 @@ Configure in **Admin > Settings > Email**:
 - Username: Your Gmail address
 - Password: App-specific password (not your regular password)
 
-**Microsoft 365:**
-- Host: `smtp.office365.com`
-- Port: `587`
-- Encryption: `TLS`
-- Username: Your email address
-- Password: Your password or app password
+**Microsoft 365 / Outlook:**
+
+Use the dedicated Microsoft 365 card in **Admin > Settings > Email**. It uses
+OAuth2 and Microsoft Graph for both outgoing notifications and incoming
+email-to-ticket processing; mailbox passwords and app passwords are not
+supported. Follow [the Microsoft 365 mail setup guide](docs/MICROSOFT_365_MAIL.md).
 
 **Generic SMTP:**
 - Host: Your SMTP server
@@ -466,6 +466,9 @@ Configure in `config.php`:
 3. Create the IMAP folders (Processed, Failed)
 4. Set up the cron job for `bin/ingest-emails.php` (or enable pseudo-cron)
 5. Configure allowed senders in Admin > Settings (Allowed Senders section)
+
+IMAP remains available for generic providers. Microsoft 365 should use the
+OAuth2/Graph connection above.
 
 ---
 

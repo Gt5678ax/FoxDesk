@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Account emails are forced regardless of notification preferences.
             $sent = send_ticket_notification_email($client['email'], $subject, $body, [
-                'language' => $client['language'] ?? 'en',
+                'language' => foxdesk_effective_user_language($client),
                 'eyebrow' => 'Password updated',
                 'title' => $subject,
             ], true);

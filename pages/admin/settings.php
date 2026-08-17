@@ -63,9 +63,29 @@ $imap_view = [
     'storage_base' => $settings['imap_storage_base'] ?? (defined('IMAP_STORAGE_BASE') ? (string) IMAP_STORAGE_BASE : 'storage/tickets'),
 ];
 $imap_extension_loaded = extension_loaded('imap') && function_exists('imap_open');
+$microsoft_mail_view = [
+    'configured' => false,
+    'connected' => false,
+    'status' => 'not_connected',
+    'mailbox_email' => '',
+    'tenant_identifier' => 'common',
+    'client_id' => '',
+    'client_secret_set' => false,
+    'inbound_enabled' => true,
+    'outbound_enabled' => true,
+    'last_sync_at' => null,
+    'last_error' => '',
+    'redirect_uri' => '',
+];
 
 if ($tab === 'email') {
     require_once BASE_PATH . '/includes/email-ingest-functions.php';
+    require_once BASE_PATH . '/includes/microsoft-mail-functions.php';
+    try {
+        $microsoft_mail_view = microsoft_mail_status();
+    } catch (Throwable $e) {
+        $microsoft_mail_view['last_error'] = $e->getMessage();
+    }
     try {
         email_ingest_ensure_schema();
         $incoming_mail_logs = db_fetch_all("

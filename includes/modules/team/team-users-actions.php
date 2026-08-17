@@ -37,7 +37,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($existing) {
                 flash(t('A user with this email already exists.'), 'error');
             } else {
-                $language = $_POST['language'] ?? 'en';
+                $language_input = trim((string) ($_POST['language'] ?? ''));
+                $language = $language_input === '' ? null : normalize_locale_tag($language_input);
+                if ($language_input !== '' && $language === null) {
+                    flash(t('Language not supported.'), 'error');
+                    redirect('admin', ['section' => 'users']);
+                }
                 try {
                     $user_id = create_user($email, $password, $first_name, $last_name, $role, $language);
                 } catch (Throwable $e) {
@@ -51,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $updates['organization_id'] = $organization_id;
                     }
                     $updates['cost_rate'] = $cost_rate;
-                    $updates['language'] = $_POST['language'] ?? 'en';
+                    $updates['language'] = $language;
                     if ($contact_phone_column_exists) {
                         $updates['contact_phone'] = $contact_phone !== '' ? $contact_phone : null;
                     }
@@ -88,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $settings = get_settings();
                         $app_name = !empty($settings['app_name']) ? $settings['app_name'] : 'FoxDesk';
                         $login_url = get_app_url();
-                        $lang = $_POST['language'] ?? 'en';
+                        $lang = $language ?? foxdesk_workspace_language();
 
                         $template = get_email_template('welcome_email', $lang);
                         if ($template) {
@@ -190,7 +195,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
         $permissions = $permission_payload !== null ? json_encode($permission_payload) : null;
 
-        $language = $_POST['language'] ?? 'en';
+        $language_input = trim((string) ($_POST['language'] ?? ''));
+        $language = $language_input === '' ? null : normalize_locale_tag($language_input);
+        if ($language_input !== '' && $language === null) {
+            flash(t('Language not supported.'), 'error');
+            redirect('admin', ['section' => 'users']);
+        }
 
         $user_updates = [
             'email' => $email,
@@ -464,7 +474,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $password = bin2hex(random_bytes(32));
 
             try {
-                $user_id = create_user($email, $password, $agent_name, '', 'agent', 'en');
+                $user_id = create_user($email, $password, $agent_name, '', 'agent', null);
             } catch (Throwable $e) {
                 $user_id = false;
                 error_log('AI agent create failed: ' . $e->getMessage());

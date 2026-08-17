@@ -36,6 +36,13 @@ define('IMAP_STORAGE_BASE', 'storage/tickets');
 define('IMAP_MARK_SEEN_ON_SKIP', true);
 define('IMAP_ALLOW_UNKNOWN_SENDERS', false);
 
+// Microsoft 365 / Outlook OAuth2 (optional; values can also be entered in Admin > Settings > Email)
+// define('MICROSOFT_MAIL_CLIENT_ID', '');
+// define('MICROSOFT_MAIL_CLIENT_SECRET', '');
+// define('MICROSOFT_MAIL_TENANT_ID', 'organizations');
+// define('MICROSOFT_MAIL_REDIRECT_URI', APP_URL . '/index.php?page=microsoft-oauth');
+// define('MICROSOFT_MAIL_ENCRYPTION_KEY', 'use_a_separate_long_random_secret');
+
 define('UPLOAD_DIR', 'uploads/');
 define('MAX_UPLOAD_SIZE', 10 * 1024 * 1024);
 

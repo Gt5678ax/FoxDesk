@@ -111,9 +111,7 @@ function refresh_user_session()
         $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
         $_SESSION['user_email'] = $user['email'];
         $_SESSION['user_avatar'] = $user['avatar'] ?? '';
-        $lang = normalize_locale_tag($user['language'] ?? null)
-            ?? normalize_locale_tag(get_setting('app_language', 'en'))
-            ?? 'en';
+        $lang = foxdesk_effective_user_language($user);
         $_SESSION['lang'] = $lang;
         unset($_SESSION['lang_override']);
     }
@@ -158,9 +156,7 @@ function login($email, $password)
         $_SESSION['user_email'] = $user['email'];
         $_SESSION['user_name'] = $user['first_name'] . ' ' . $user['last_name'];
         $_SESSION['user_role'] = $user['role'];
-        $lang = normalize_locale_tag($user['language'] ?? null)
-            ?? normalize_locale_tag(get_setting('app_language', 'en'))
-            ?? 'en';
+        $lang = foxdesk_effective_user_language($user);
         $_SESSION['lang'] = $lang;
         unset($_SESSION['lang_override']);
         return true;
@@ -311,9 +307,7 @@ function validate_remember_token()
     $_SESSION['user_name']  = $user['first_name'] . ' ' . $user['last_name'];
     $_SESSION['user_role']  = $user['role'];
 
-    $lang = normalize_locale_tag($user['language'] ?? null)
-        ?? normalize_locale_tag(get_setting('app_language', 'en'))
-        ?? 'en';
+    $lang = foxdesk_effective_user_language($user);
     $_SESSION['lang'] = $lang;
     unset($_SESSION['lang_override']);
 
@@ -401,7 +395,7 @@ function get_clients()
 /**
  * Create new user
  */
-function create_user($email, $password, $first_name, $last_name = '', $role = 'user', $language = 'en')
+function create_user($email, $password, $first_name, $last_name = '', $role = 'user', $language = null)
 {
     $hash = password_hash($password, PASSWORD_DEFAULT);
 

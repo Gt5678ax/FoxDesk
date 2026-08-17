@@ -481,7 +481,7 @@ function send_recurring_task_notification($ticket_id, $recurring_task)
     require_once BASE_PATH . '/includes/mailer.php';
 
     // Get language
-    $language = $assigned_user['language'] ?? 'en';
+    $language = foxdesk_effective_user_language($assigned_user);
 
     // Get template
     $template = get_email_template('recurring_task_assignment', $language);
@@ -526,4 +526,3 @@ function send_recurring_task_notification($ticket_id, $recurring_task)
         'cta_url' => APP_URL . '/index.php?page=ticket&id=' . $ticket_id,
     ]);
 }
-
