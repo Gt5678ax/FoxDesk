@@ -11,6 +11,69 @@ function settings_handle_post_request(callable $settings_audit): void
 
     require_csrf_token();
 
+    if (
+        isset($_POST['connect_microsoft'])
+        || isset($_POST['disconnect_microsoft'])
+        || isset($_POST['test_microsoft'])
+        || isset($_POST['save_microsoft_directions'])
+    ) {
+        require_once BASE_PATH . '/includes/microsoft-mail-functions.php';
+
+        try {
+            if (isset($_POST['connect_microsoft'])) {
+                $existing = microsoft_mail_config();
+                $tenant_identifier = trim((string) ($_POST['microsoft_tenant_identifier'] ?? $existing['tenant_identifier']));
+                $client_id = trim((string) ($_POST['microsoft_client_id'] ?? $existing['client_id']));
+                $client_secret = trim((string) ($_POST['microsoft_client_secret'] ?? ''));
+                if ($client_secret === '') {
+                    $client_secret = (string) $existing['client_secret'];
+                }
+                $authorization_url = microsoft_mail_begin_authorization(
+                    $tenant_identifier,
+                    $client_id,
+                    $client_secret,
+                    isset(current_user()['id']) ? (int) current_user()['id'] : null,
+                    trim((string) ($_POST['microsoft_login_hint'] ?? ''))
+                );
+                $settings_audit('microsoft_mail_authorization_started', [
+                    'tenant_identifier' => $tenant_identifier,
+                    'client_id_suffix' => substr($client_id, -6),
+                ]);
+                header('Location: ' . $authorization_url);
+                exit;
+            }
+
+            if (isset($_POST['disconnect_microsoft'])) {
+                microsoft_mail_disconnect();
+                $settings_audit('microsoft_mail_disconnected');
+                flash(t('Microsoft mailbox disconnected.'), 'success');
+            } elseif (isset($_POST['test_microsoft'])) {
+                $result = microsoft_mail_test_connection();
+                flash(t('Microsoft connection is ready for {email}.', [
+                    'email' => (string) ($result['mailbox_email'] ?? ''),
+                ]), 'success');
+            } elseif (isset($_POST['save_microsoft_directions'])) {
+                microsoft_mail_set_directions(
+                    isset($_POST['microsoft_inbound_enabled']),
+                    isset($_POST['microsoft_outbound_enabled'])
+                );
+                $settings_audit('microsoft_mail_directions_changed', [
+                    'inbound' => isset($_POST['microsoft_inbound_enabled']),
+                    'outbound' => isset($_POST['microsoft_outbound_enabled']),
+                ]);
+                flash(t('Microsoft mail settings saved.'), 'success');
+            }
+        } catch (Throwable $e) {
+            $settings_audit('microsoft_mail_action_failed', [
+                'action' => isset($_POST['connect_microsoft']) ? 'connect' : (isset($_POST['test_microsoft']) ? 'test' : 'settings'),
+                'error_class' => get_class($e),
+            ], 'warning');
+            flash(t('Microsoft connection failed: {error}', ['error' => $e->getMessage()]), 'error');
+        }
+
+        redirect('admin', ['section' => 'settings', 'tab' => 'email']);
+    }
+
     // Save 2FA security settings
     if (isset($_POST['save_2fa_settings'])) {
         save_setting('2fa_required_user', !empty($_POST['2fa_required_user']) ? '1' : '0');
@@ -445,7 +508,16 @@ function settings_handle_post_request(callable $settings_audit): void
         save_setting('ticket_prefix', strtoupper(preg_replace('/[^A-Za-z]/', '', $ticket_prefix)) ?: 'TK');
         save_setting('login_welcome_text', trim($_POST['login_welcome_text'] ?? ''));
         save_setting('app_language', $app_language);
-        $_SESSION['lang'] = $app_language;
+        if (!empty($_POST['use_workspace_language_for_current_user'])) {
+            $current = current_user();
+            if (!empty($current['id'])) {
+                db_update('users', ['language' => null], 'id = ?', [(int) $current['id']]);
+                current_user(true);
+            }
+            $_SESSION['lang'] = $app_language;
+        } else {
+            $_SESSION['lang'] = foxdesk_effective_user_language(current_user(), $app_language);
+        }
         unset($_SESSION['lang_override']);
         save_setting('time_format', $time_format);
         save_setting('currency', $currency);

@@ -1,5 +1,14 @@
 # FoxDesk localization
 
+## Workspace default and personal language
+
+**Admin > Settings > General > Default workspace language** controls the login
+page and every account that has not chosen its own language. **Profile >
+Language** is the signed-in user's personal override. Choosing **Use workspace
+default** removes that override, so later workspace-language changes apply to
+the user automatically. A temporary URL language parameter changes only the
+current response and never rewrites the profile preference.
+
 FoxDesk has one public registry for 24 product locales:
 
 `en`, `cs`, `de`, `es`, `it`, `ar`, `fr`, `pt-BR`, `pt-PT`, `pl`, `nl`,

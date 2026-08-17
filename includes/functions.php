@@ -503,28 +503,13 @@ function get_app_language()
             ]);
         }
 
-        if (function_exists('is_logged_in') && function_exists('current_user') && is_logged_in()) {
-            $session_user = current_user();
-            if (!empty($session_user['id'])) {
-                $current_user_lang = $normalize($session_user['language'] ?? null);
-                if ($current_user_lang !== $requested) {
-                    try {
-                        db_update('users', ['language' => $requested], 'id = ?', [(int) $session_user['id']]);
-                        current_user(true);
-                    } catch (Throwable $e) {
-                        // Non-fatal: UI language still follows current request/session.
-                    }
-                }
-            }
-        }
-
         return $requested;
     }
 
     if (function_exists('is_logged_in') && function_exists('current_user') && is_logged_in()) {
         $session_user = current_user();
-        $user_lang = $normalize($session_user['language'] ?? null);
-        if ($user_lang !== null) {
+        $user_lang = foxdesk_effective_user_language($session_user);
+        if ($user_lang !== '') {
             $_SESSION['lang'] = $user_lang;
             unset($_SESSION['lang_override']);
             return $user_lang;
@@ -548,15 +533,7 @@ function get_app_language()
         return $browser_lang;
     }
 
-    $setting_lang = null;
-    if (function_exists('get_setting')) {
-        try {
-            $setting_lang = $normalize(get_setting('app_language', 'en'));
-        } catch (Throwable $e) {
-            $setting_lang = null;
-        }
-    }
-    return $setting_lang ?? 'en';
+    return foxdesk_workspace_language();
 }
 
 /**

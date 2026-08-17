@@ -299,6 +299,9 @@
                         <div>
                             <label class="block text-sm font-medium mb-1 text-theme-secondary"><?php echo e(t('Language')); ?></label>
                             <select name="language" class="form-select">
+                                <option value=""><?php echo e(t('Use workspace default ({language})', [
+                                    'language' => foxdesk_locale_option_label(foxdesk_workspace_language()),
+                                ])); ?></option>
                                 <?php foreach (get_supported_languages() as $code => $language): ?>
                                     <option value="<?php echo e($code); ?>"><?php echo e(foxdesk_locale_option_label($code)); ?></option>
                                 <?php endforeach; ?>

@@ -324,7 +324,7 @@ function api_agent_me()
             'first_name' => $user['first_name'],
             'last_name' => $user['last_name'],
             'role' => $user['role'],
-            'language' => $user['language'] ?? 'en',
+            'language' => foxdesk_effective_user_language($user),
             'is_ai_agent' => !empty($user['is_ai_agent']),
             'ai_model' => $user['ai_model'] ?? null,
         ],

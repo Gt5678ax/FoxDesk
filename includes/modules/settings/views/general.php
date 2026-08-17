@@ -35,7 +35,7 @@
                 </div>
 
                 <div class="max-w-sm">
-                    <label class="block text-sm font-medium mb-1 text-theme-secondary"><?php echo e(t('Language')); ?></label>
+                    <label class="block text-sm font-medium mb-1 text-theme-secondary"><?php echo e(t('Default workspace language')); ?></label>
                     <select name="app_language" class="form-select">
                         <?php foreach (get_supported_languages() as $code => $language): ?>
                             <option value="<?php echo e($code); ?>" <?php echo ($settings['app_language'] ?? 'en') === $code ? 'selected' : ''; ?>>
@@ -44,8 +44,12 @@
                         <?php endforeach; ?>
                     </select>
                     <p class="text-xs mt-1 text-theme-muted">
-                        <?php echo e(t('Default interface language for all users. Users can override this in their profile.')); ?>
+                        <?php echo e(t('Used for the login page and users who have not selected their own language.')); ?>
                     </p>
+                    <label class="flex items-start gap-2 mt-3 text-sm text-theme-secondary">
+                        <input type="checkbox" name="use_workspace_language_for_current_user" value="1" checked>
+                        <span><?php echo e(t('Use this workspace language for my account as well.')); ?></span>
+                    </label>
                 </div>
 
                 <div class="max-w-sm">

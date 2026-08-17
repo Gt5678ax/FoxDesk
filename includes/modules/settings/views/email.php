@@ -2,6 +2,7 @@
         <div class="space-y-3">
             <form method="post">
                 <?php echo csrf_field(); ?>
+                <?php include BASE_PATH . '/includes/modules/settings/views/microsoft-mail.php'; ?>
                 <div class="card card-body mb-2">
                     <h3 class="font-semibold mb-1 text-theme-primary"><?php echo e(t('Outgoing email')); ?>
                     </h3>

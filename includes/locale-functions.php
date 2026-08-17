@@ -1,5 +1,38 @@
 <?php
 
+/** Resolve the workspace locale without assuming the settings table is loaded. */
+function foxdesk_workspace_language(): string
+{
+    $language = null;
+    if (function_exists('get_setting')) {
+        try {
+            $language = normalize_locale_tag(get_setting('app_language', 'en'));
+        } catch (Throwable $e) {
+            $language = null;
+        }
+    }
+
+    return $language ?? 'en';
+}
+
+/** Return a user's explicit locale, or null when it inherits the workspace. */
+function foxdesk_user_language_override(?array $user): ?string
+{
+    if (!$user || !array_key_exists('language', $user)) {
+        return null;
+    }
+
+    $value = trim((string) ($user['language'] ?? ''));
+    return $value === '' ? null : normalize_locale_tag($value);
+}
+
+function foxdesk_effective_user_language(?array $user, ?string $workspace_language = null): string
+{
+    return foxdesk_user_language_override($user)
+        ?? normalize_locale_tag($workspace_language)
+        ?? foxdesk_workspace_language();
+}
+
 /**
  * Load the canonical FoxDesk locale registry, keyed by canonical BCP-47 tag.
  */

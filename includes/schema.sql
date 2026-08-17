@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS users (
     dashboard_layout TEXT NULL,
     organization_id INT,
     avatar TEXT,
-    language VARCHAR(35) DEFAULT 'en',
+    language VARCHAR(35) NULL DEFAULT NULL,
     email_notifications_enabled TINYINT(1) DEFAULT 1,
     in_app_notifications_enabled TINYINT(1) DEFAULT 1,
     in_app_sound_enabled TINYINT(1) DEFAULT 0,
@@ -335,6 +335,35 @@ CREATE TABLE IF NOT EXISTS settings (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_key (setting_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS email_provider_connections (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    tenant_id INT NOT NULL DEFAULT 0,
+    provider VARCHAR(32) NOT NULL,
+    tenant_identifier VARCHAR(191) NOT NULL DEFAULT 'common',
+    client_id VARCHAR(191) NOT NULL,
+    client_secret_ciphertext TEXT NULL,
+    mailbox_email VARCHAR(255) NULL,
+    access_token_ciphertext MEDIUMTEXT NULL,
+    refresh_token_ciphertext MEDIUMTEXT NULL,
+    token_expires_at DATETIME NULL,
+    scopes TEXT NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'pending',
+    inbound_enabled TINYINT(1) NOT NULL DEFAULT 1,
+    outbound_enabled TINYINT(1) NOT NULL DEFAULT 1,
+    oauth_state_hash CHAR(64) NULL,
+    oauth_state_expires_at DATETIME NULL,
+    code_verifier_ciphertext TEXT NULL,
+    delta_link MEDIUMTEXT NULL,
+    last_sync_at DATETIME NULL,
+    last_error TEXT NULL,
+    created_by INT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_email_provider_tenant (tenant_id, provider),
+    INDEX idx_email_provider_status (provider, status),
+    INDEX idx_email_provider_state (oauth_state_hash)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Email templates table

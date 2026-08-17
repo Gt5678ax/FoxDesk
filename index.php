@@ -289,17 +289,22 @@ if (is_logged_in() && function_exists('page_views_table_exists')) {
 // Log request to debug_log if available
 if (function_exists('debug_log')) {
     $log_post = $_POST;
+    $log_get = $_GET;
     // Sanitize sensitive fields
-    foreach (['password', 'smtp_pass', 'current_password', 'confirm_password', 'password_confirmation'] as $field) {
+    foreach (['password', 'smtp_pass', 'microsoft_client_secret', 'current_password', 'confirm_password', 'password_confirmation'] as $field) {
         if (isset($log_post[$field]))
             $log_post[$field] = '***';
+    }
+    foreach (['code', 'state'] as $field) {
+        if (isset($log_get[$field]))
+            $log_get[$field] = '***';
     }
 
     debug_log("Request: $page" . ($action ? " action=$action" : ""), [
         'method' => $_SERVER['REQUEST_METHOD'],
         'page' => $page,
         'action' => $action,
-        'get' => $_GET,
+        'get' => $log_get,
         'post' => $log_post
     ], 'info', 'request');
 }
@@ -362,6 +367,10 @@ switch ($page) {
 
     case 'new-ticket':
         require_once BASE_PATH . '/pages/new-ticket.php';
+        break;
+
+    case 'microsoft-oauth':
+        require_once BASE_PATH . '/pages/microsoft-oauth.php';
         break;
 
     case 'admin':

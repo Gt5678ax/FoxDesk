@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/locale-functions.php';
+require_once __DIR__ . '/microsoft-mail-functions.php';
 /**
  * Mailer Functions
  * 
@@ -70,7 +72,7 @@ function send_ticket_notification_email($to, $subject, $body, array $payload = [
     if (empty($payload['language']) && function_exists('db_fetch_one')) {
         try {
             $recipient = db_fetch_one("SELECT language FROM users WHERE email = ? LIMIT 1", [$to]);
-            $payload['language'] = $recipient['language'] ?? 'en';
+            $payload['language'] = foxdesk_effective_user_language($recipient);
         } catch (Throwable $e) {
             $payload['language'] = 'en';
         }
@@ -137,6 +139,19 @@ function send_email($to, $subject, $body, $is_html = false, $force_delivery = fa
     if (empty($from_email)) {
         $admin = db_fetch_one("SELECT email FROM users WHERE role = 'admin' LIMIT 1");
         $from_email = $admin['email'] ?? 'noreply@' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+    }
+
+    if (microsoft_mail_is_active('outbound')) {
+        try {
+            $result = microsoft_mail_send($to, $subject, $body, (bool) $is_html, $from_email);
+            if ($result) {
+                error_log("Email sent via Microsoft Graph to: $to");
+            }
+            return $result;
+        } catch (Throwable $e) {
+            error_log('Microsoft Graph email failed: ' . $e->getMessage());
+            return false;
+        }
     }
 
     $smtp_host = $settings['smtp_host'] ?? '';
@@ -348,7 +363,7 @@ function send_password_reset_email($to, $name, $reset_link)
     // but usually we do. However, this function signature doesn't pass user object.
     // We'll try to find the user by email to get their language.
     $user = db_fetch_one("SELECT * FROM users WHERE email = ?", [$to]);
-    $lang = $user['language'] ?? 'en';
+    $lang = foxdesk_effective_user_language($user);
 
     $template = get_email_template('password_reset', $lang);
 
@@ -404,7 +419,7 @@ function send_status_change_notification($ticket, $old_status, $new_status, $com
     if (!$user)
         return false;
 
-    $lang = $user['language'] ?? 'en';
+    $lang = foxdesk_effective_user_language($user);
     $template = get_email_template('status_change', $lang);
     $app_name = $settings['app_name'] ?? (defined('APP_NAME') ? APP_NAME : 'FoxDesk');
     $ticket_url = get_app_url() . '/index.php?page=ticket&id=' . $ticket['id'];
@@ -570,7 +585,7 @@ function send_new_comment_notification($ticket, $comment, $commenter, $comment_i
             continue;
         }
 
-        $lang = normalize_email_template_language($recipient['language'] ?? 'en');
+        $lang = normalize_email_template_language(foxdesk_effective_user_language($recipient));
         $template = get_email_template($template_key, $lang);
         $recipient_name = trim(($recipient['first_name'] ?? '') . ' ' . ($recipient['last_name'] ?? ''));
         if ($recipient_name === '') {
@@ -678,7 +693,7 @@ function send_new_ticket_notification($ticket)
             continue;
         }
 
-        $lang = $admin['language'] ?? 'en';
+        $lang = foxdesk_effective_user_language($admin);
         $template = get_email_template('new_ticket', $lang);
         if (!$template) {
             $subject = t('New ticket') . ' #{ticket_id}: {ticket_title}';
@@ -1134,7 +1149,7 @@ function send_ticket_confirmation_to_user($ticket)
         return false;
     }
 
-    $lang = $user['language'] ?? 'en';
+    $lang = foxdesk_effective_user_language($user);
     $app_name = $settings['app_name'] ?? (defined('APP_NAME') ? APP_NAME : 'FoxDesk');
     $ticket_code = get_ticket_code($ticket['id']);
     $ticket_url = get_app_url() . '/index.php?page=ticket&id=' . $ticket['id'];
@@ -1192,7 +1207,7 @@ function send_ticket_assignment_notification($ticket, $assigned_agent, $assigner
         return false;
     }
 
-    $lang = $assigned_agent['language'] ?? 'en';
+    $lang = foxdesk_effective_user_language($assigned_agent);
     $template = get_email_template('ticket_assignment', $lang);
     if (!$template) {
         return false; // Template not found or not active
@@ -1247,7 +1262,7 @@ function send_due_date_reminder($ticket, $is_overdue = false)
         return;
     }
 
-    $lang = normalize_email_template_language($assigned_user['language'] ?? 'en');
+    $lang = normalize_email_template_language(foxdesk_effective_user_language($assigned_user));
     $ticket_code = get_ticket_code($ticket['id']);
     $ticket_url = get_app_url() . '/index.php?page=ticket&id=' . $ticket['id'];
 
@@ -1356,7 +1371,7 @@ function send_long_timer_alert($user, $time_entry, $ticket)
         return false;
     }
 
-    $lang = $user['language'] ?? 'en';
+    $lang = foxdesk_effective_user_language($user);
     $template = get_email_template('long_timer_alert', $lang);
     $app_name = $settings['app_name'] ?? (defined('APP_NAME') ? APP_NAME : 'FoxDesk');
     $ticket_code = get_ticket_code($ticket['id']);

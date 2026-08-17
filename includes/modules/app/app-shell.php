@@ -13,14 +13,18 @@ function app_shell_can_view_reports(array $user): bool
 
 function app_shell_user(array $user): array
 {
+    $preference = foxdesk_user_language_override($user);
+    $language = foxdesk_effective_user_language($user);
     return [
         'id' => (int) ($user['id'] ?? 0),
         'name' => trim((string) (($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''))),
         'email' => (string) ($user['email'] ?? ''),
         'role' => (string) ($user['role'] ?? ''),
-        'language' => function_exists('get_app_language') ? get_app_language() : 'en',
-        'dir' => function_exists('get_app_direction') ? get_app_direction() : 'ltr',
-        'is_rtl' => function_exists('is_rtl') ? is_rtl() : false,
+        'language' => $language,
+        'language_preference' => $preference,
+        'language_source' => $preference === null ? 'workspace' : 'user',
+        'dir' => function_exists('get_app_direction') ? get_app_direction($language) : 'ltr',
+        'is_rtl' => function_exists('is_rtl') ? is_rtl($language) : false,
         'is_admin' => is_admin(),
         'is_platform_admin' => function_exists('is_platform_admin') ? is_platform_admin() : false,
     ];
