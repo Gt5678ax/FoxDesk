@@ -18,7 +18,7 @@ return [
     'Add client' => 'Add client',
     'Add comment' => 'Add comment',
     'Add new status' => 'Add new status',
-    'Add organization' => 'Add organization',
+    'Add organization' => 'Add company',
     'Add priority' => 'Add priority',
     'Add status' => 'Add status',
     'Add ticket type' => 'Add ticket type',

@@ -3,7 +3,7 @@
  * Admin - Organizations (Firms)
  */
 
-$page_title = t('Organizations');
+$page_title = t('Clients');
 $page = 'admin';
 
 schema_require('client logos', ['organizations'], ['organizations' => ['logo']]);
@@ -304,15 +304,19 @@ require_once BASE_PATH . '/includes/header.php';
 <?php
 $page_header_title = $page_title;
 $page_header_subtitle = t('Manage organizations and visibility.');
+$page_header_actions = '<a href="#new-client-company" class="btn btn-primary">'
+    . get_icon('plus', 'w-4 h-4')
+    . '<span>' . e(t('Add organization')) . '</span></a>';
 include BASE_PATH . '/includes/components/page-header.php';
+include BASE_PATH . '/includes/components/client-management-nav.php';
 ?>
 
-<div class="admin-two-column">
+<div class="admin-two-column client-companies-page">
     <!-- Organizations List -->
     <div class="admin-main-column">
     <div class="admin-list-card">
         <div class="px-6 py-3 border-b flex items-center justify-between">
-            <h3 class="font-semibold text-theme-primary"><?php echo e(t('Organization list')); ?></h3>
+            <h3 class="font-semibold text-theme-primary"><?php echo e(t('Companies')); ?></h3>
             <span class="text-sm text-theme-muted"><?php echo e(t('Click row to expand members')); ?></span>
         </div>
 
@@ -520,7 +524,7 @@ include BASE_PATH . '/includes/components/page-header.php';
 
     <!-- Add Organization Form (Sidebar) -->
     <div class="admin-side-column">
-    <div class="card card-body h-fit">
+    <div class="card card-body h-fit" id="new-client-company">
         <h3 class="font-semibold mb-4 text-theme-primary"><?php echo e(t('Add organization')); ?></h3>
 
         <form method="post" enctype="multipart/form-data" class="space-y-4">
