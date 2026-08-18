@@ -4,9 +4,9 @@ Open-source helpdesk and ticketing system built with PHP, Tailwind CSS, and Alpi
 
 **Website:** [foxdesk.net](https://foxdesk.net/?utm_source=github.com&utm_medium=referral&utm_campaign=foxdesk_open_source)
 
-**Latest packaged release:** [`0.3.139`](https://github.com/lukashanes/foxdesk/releases/tag/v0.3.139) (`2026-08-17`)
+**Latest packaged release:** [`0.3.140`](https://github.com/lukashanes/foxdesk/releases/tag/v0.3.140) (`2026-08-18`)
 
-**Development version on `main`:** `0.3.139`
+**Development version on `main`:** `0.3.140`
 
 ## Release Boundary
 
