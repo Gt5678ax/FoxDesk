@@ -30,16 +30,16 @@ function admin_settings_management_links(): array
             'url' => url('admin', ['section' => 'users']),
         ],
         [
-            'label' => t('Clients'),
-            'description' => t('Client contacts and access.'),
-            'icon' => 'user',
-            'url' => url('admin', ['section' => 'clients']),
-        ],
-        [
             'label' => t('Companies'),
             'description' => t('Organizations, billing rates, and company details.'),
             'icon' => 'building',
             'url' => url('admin', ['section' => 'organizations']),
+        ],
+        [
+            'label' => t('Contacts'),
+            'description' => t('Client contacts and access.'),
+            'icon' => 'users',
+            'url' => url('admin', ['section' => 'clients']),
         ],
         [
             'label' => t('Ticket workflow'),

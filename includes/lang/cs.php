@@ -18,7 +18,7 @@ return [
     'Add client' => 'Přidat klienta',
     'Add comment' => 'Přidat komentář',
     'Add new status' => 'Přidat nový stav',
-    'Add organization' => 'Přidat organizaci',
+    'Add organization' => 'Přidat firmu',
     'Add priority' => 'Přidat prioritu',
     'Add status' => 'Přidat stav',
     'Add ticket type' => 'Přidat typ požadavku',

@@ -283,12 +283,12 @@ if (file_exists(__DIR__ . '/pseudo-cron.php')) {
                 </a>
 
                 <?php if (is_admin()): ?>
-                    <?php $is_clients = ($page ?? '') === 'admin' && ($_GET['section'] ?? '') === 'clients'; ?>
-                    <a href="<?php echo url('admin', ['section' => 'clients']); ?>"
+                    <?php $is_clients = ($page ?? '') === 'admin' && in_array(($_GET['section'] ?? ''), ['organizations', 'clients'], true); ?>
+                    <a href="<?php echo url('admin', ['section' => 'organizations']); ?>"
                         class="nav-item <?php echo $is_clients ? 'active' : ''; ?>"
                         title="<?php echo e(t('Clients')); ?>"
                         <?php echo $is_clients ? 'aria-current="page"' : ''; ?>>
-                        <?php echo get_icon('user', 'nav-item__icon'); ?>
+                        <?php echo get_icon('building', 'nav-item__icon'); ?>
                         <span><?php echo e(t('Clients')); ?></span>
                     </a>
                 <?php endif; ?>

@@ -3,7 +3,7 @@
  * Admin - Clients Management
  */
 
-$page_title = t('Clients');
+$page_title = t('Contacts');
 $page = 'admin';
 $clients = get_clients();
 $ticket_counts = [];
@@ -134,15 +134,19 @@ require_once BASE_PATH . '/includes/header.php';
 <?php
 $page_header_title = $page_title;
 $page_header_subtitle = t('Manage client accounts and access.');
+$page_header_actions = '<a href="#new-client-contact" class="btn btn-primary">'
+    . get_icon('plus', 'w-4 h-4')
+    . '<span>' . e(t('Add client')) . '</span></a>';
 include BASE_PATH . '/includes/components/page-header.php';
+include BASE_PATH . '/includes/components/client-management-nav.php';
 ?>
 
-<div class="admin-two-column">
+<div class="admin-two-column client-contacts-page">
     <!-- Clients List -->
     <div class="admin-main-column">
         <div class="admin-list-card">
             <div class="px-6 py-3 border-b flex items-center justify-between border-theme-light">
-                <h3 class="font-semibold text-theme-primary"><?php echo e(t('Clients')); ?> (<?php echo count($clients); ?>)
+                <h3 class="font-semibold text-theme-primary"><?php echo e(t('Contacts')); ?> (<?php echo count($clients); ?>)
                 </h3>
             </div>
 
@@ -225,7 +229,7 @@ include BASE_PATH . '/includes/components/page-header.php';
     </div>
 
     <!-- Add New Client -->
-    <div class="admin-side-column">
+    <div class="admin-side-column" id="new-client-contact">
         <div class="card card-body">
             <h3 class="font-semibold mb-4 text-theme-primary"><?php echo e(t('Add client')); ?></h3>
 

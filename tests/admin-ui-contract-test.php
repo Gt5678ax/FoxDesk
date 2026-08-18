@@ -32,6 +32,8 @@ $admin_users .= "\n" . read_admin_ui_file($root, 'includes/components/team/users
 $admin_users .= "\n" . read_admin_ui_file($root, 'includes/components/team/user-edit-surface.php');
 $admin_users .= "\n" . read_admin_ui_file($root, 'includes/components/team/ai-agents-surface.php');
 $admin_clients = read_admin_ui_file($root, 'pages/admin/clients.php');
+$admin_organizations = read_admin_ui_file($root, 'pages/admin/organizations.php');
+$client_management_nav = read_admin_ui_file($root, 'includes/components/client-management-nav.php');
 $ui_css = $theme . "\n" . $tickets;
 
 foreach ([
@@ -44,6 +46,7 @@ foreach ([
 
 assert_admin_ui(str_contains($header, "title=\"<?php echo e(t('Dashboard')); ?>\""), 'Primary home navigation must be labeled Dashboard.');
 assert_admin_ui(!str_contains($header, "title=\"<?php echo e(t('Work')); ?>\""), 'Primary home navigation must not use the Work label.');
+assert_admin_ui(str_contains($header, "url('admin', ['section' => 'organizations'])"), 'Clients must be a primary sidebar destination that opens company records.');
 assert_admin_ui(
     strpos($header, "url('admin', ['section' => 'settings'])") > strpos($header, '<!-- Active timers'),
     'Settings must live in the lower sidebar area, not the primary navigation block.'
@@ -130,6 +133,23 @@ foreach ([
     "url('admin', ['section' => 'activity'])",
 ] as $needle) {
     assert_admin_ui(str_contains($admin_settings . "\n" . $admin_nav . "\n" . $admin_settings_tabs, $needle), 'Settings must expose moved admin area: ' . $needle);
+}
+
+foreach ([
+    "t('Companies')",
+    "t('Contacts')",
+    "['section' => 'organizations']",
+    "['section' => 'clients']",
+] as $needle) {
+    assert_admin_ui(str_contains($client_management_nav, $needle), 'Client management navigation missing: ' . $needle);
+}
+assert_admin_ui(str_contains($admin_organizations, "\$page_title = t('Clients')"), 'Company records must be presented under Clients.');
+assert_admin_ui(str_contains($admin_organizations, 'href="#new-client-company"'), 'Company records need a visible add-company action.');
+assert_admin_ui(str_contains($admin_organizations, 'id="new-client-company"'), 'The add-company action must target the create form.');
+assert_admin_ui(str_contains($admin_clients, "\$page_title = t('Contacts')"), 'Client login accounts must be presented as Contacts.');
+assert_admin_ui(str_contains($admin_clients, 'id="new-client-contact"'), 'The add-contact action must target the create form.');
+foreach (['.client-management-nav', '.client-companies-page .admin-side-column', 'order: -1'] as $needle) {
+    assert_admin_ui(str_contains($theme, $needle), 'Responsive client-company UI contract missing: ' . $needle);
 }
 
 foreach ([

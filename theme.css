@@ -2587,6 +2587,42 @@ min-width: 0;
 .admin-side-column {
 min-width: 0;
 }
+.client-management-nav {
+display: inline-flex;
+align-items: center;
+gap: 0.25rem;
+margin-block-end: 1rem;
+padding: 0.25rem;
+border: 1px solid var(--border-light);
+border-radius: var(--fd-radius-control);
+background: var(--surface-secondary);
+}
+.client-management-nav__item {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 0.45rem;
+min-height: 38px;
+padding-inline: 0.85rem;
+border-radius: calc(var(--fd-radius-control) - 3px);
+color: var(--text-secondary);
+font-size: var(--type-sm);
+font-weight: 700;
+text-decoration: none;
+transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.client-management-nav__item:hover {
+color: var(--text-primary);
+}
+.client-management-nav__item.is-active {
+background: var(--surface-primary);
+color: var(--primary);
+box-shadow: var(--shadow-sm);
+}
+.client-companies-page .admin-side-column > .card,
+.client-contacts-page .admin-side-column {
+scroll-margin-block-start: 1rem;
+}
 .admin-list-card {
 overflow: hidden;
 border: 1px solid var(--border-light);
@@ -2961,6 +2997,10 @@ grid-template-columns: 1fr;
 }
 .admin-two-column {
 grid-template-columns: 1fr;
+}
+.client-companies-page .admin-side-column,
+.client-contacts-page .admin-side-column {
+order: -1;
 }
 }
 @media (max-width: 720px) {
