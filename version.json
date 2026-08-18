@@ -1,8 +1,10 @@
 {
-    "version": "0.3.139",
-    "date": "2026-08-17",
+    "version": "0.3.140",
+    "date": "2026-08-18",
     "min_php": "8.1",
     "changelog": [
+        "Client companies are now the primary Clients view, with separate Companies and Contacts navigation and a visible Add company action",
+        "On narrower screens, the company and contact forms appear before long client lists so administrators can add records without searching below the list",
         "Workspace administrators can set one default language while users inherit it or keep a personal preference",
         "The language profile now clearly distinguishes a workspace default from a user-specific override",
         "Microsoft 365 and Outlook mailboxes can connect through OAuth2 for inbound tickets and outbound notifications without storing the mailbox password",
