@@ -1,0 +1,39 @@
+name: Feature request
+description: Propose a user outcome for the self-hosted edition
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem should FoxDesk solve?
+      description: Describe the user situation, not only the requested control or field.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What should the user be able to do?
+      description: Explain the result and who benefits from it.
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Example workflow
+      description: Give one concrete example from request to completed work or report.
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Current workaround
+      description: How do you handle this today?
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and discussions.
+          required: true
+        - label: This belongs in the self-hosted edition and does not require FoxDesk Cloud billing or tenant administration.
+          required: true

@@ -1,257 +1,188 @@
-# FoxDesk
+<p align="center">
+  <img src="assets/img/logo.png" width="76" height="76" alt="FoxDesk logo">
+</p>
 
-Open-source helpdesk and ticketing system built with PHP, Tailwind CSS, and Alpine.js.
+<h1 align="center">FoxDesk</h1>
 
-**Website:** [foxdesk.net](https://foxdesk.net/?utm_source=github.com&utm_medium=referral&utm_campaign=foxdesk_open_source)
+<p align="center"><strong>Client requests, recorded work, and clear reports on your own server.</strong></p>
 
-**Latest packaged release:** [`0.3.140`](https://github.com/lukashanes/foxdesk/releases/tag/v0.3.140) (`2026-08-18`)
+<p align="center">
+  Open-source help desk and time tracking for freelancers, agencies, and service teams.
+</p>
 
-**Development version on `main`:** `0.3.140`
+<p align="center">
+  <a href="https://github.com/lukashanes/foxdesk/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/lukashanes/foxdesk?display_name=tag&sort=semver&style=flat-square&color=2b59eb"></a>
+  <a href="https://github.com/lukashanes/foxdesk/actions/workflows/tests.yml"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/lukashanes/foxdesk/tests.yml?branch=main&style=flat-square&label=tests"></a>
+  <a href="LICENSE.md"><img alt="AGPL-3.0 license" src="https://img.shields.io/github/license/lukashanes/foxdesk?style=flat-square"></a>
+  <img alt="PHP 8.1 or newer" src="https://img.shields.io/badge/PHP-8.1%2B-777BB4?style=flat-square&logo=php&logoColor=white">
+  <img alt="24 application languages" src="https://img.shields.io/badge/languages-24-159E72?style=flat-square">
+</p>
 
-## Release Boundary
+<p align="center">
+  <a href="https://foxdesk.net/getting-started/introduction/">Documentation</a> ·
+  <a href="https://github.com/lukashanes/foxdesk/releases/latest">Download</a> ·
+  <a href="https://github.com/lukashanes/foxdesk/discussions">Discussions</a> ·
+  <a href="https://foxdesk.net/comparison/">FoxDesk Cloud</a>
+</p>
 
-This repository is the public self-hosted PHP FoxDesk release channel.
-Hosted product work is owned by the private FoxDesk SaaS repository, including
-FoxDesk subscription billing, trials, tenant lifecycle, the operator platform,
-managed Cloudflare/R2 deployment, and native mobile API work. None of those
-paid-service modules are published from this repository.
+[![FoxDesk self-hosted dashboard with client work and recorded time](docs/screenshots/dashboard-light.png)](docs/screenshots/dashboard-light.png)
 
-The report rate and billable-time features below are local client-reporting
-tools. They do not implement FoxDesk subscriptions, Stripe checkout, trials, or
-SaaS account billing.
+FoxDesk keeps the request, its owner, the work performed, and the client report in one record. A client can write by email or through the portal. Your team assigns the ticket, records time beside the work, and shares a report without rebuilding the month from inboxes and spreadsheets.
 
-Self-hosted changes should focus on security, local installation, public
-updates, IMAP/self-hosted operations, and the one-way self-hosted to SaaS migration bridge.
+It runs on ordinary PHP hosting or a VPS. There is no per-agent fee, no hosted dependency, and no requirement to send client data to FoxDesk Cloud.
 
----
+## The workflow
 
-## Features
+| 1. Receive | 2. Take ownership | 3. Record work | 4. Report |
+| --- | --- | --- | --- |
+| Turn portal and email requests into tickets with their full context. | Assign an owner, priority, due date, status, and client organization. | Use a timer or an exact manual entry. Keep every note beside the ticket. | Review real time, rates, and completed work before sharing or exporting. |
 
-**Ticket Management**
-- Create, assign, comment, resolve, and archive tickets
-- Custom statuses, priorities, and ticket types
-- Tags, due dates, and organization assignment
-- Internal notes (agent-only) and public comments
-- Public ticket sharing via secure links with expiration
-- Inline ticket-list editing for subject, type, status, priority, due date, company, and assignee
-- Compact Quick Add row for creating tickets directly from the list
-- Bulk actions (status, priority, assignment)
-- Advanced filtering and full-text search
-- Edit history tracking on all fields
+## Choose how to run FoxDesk
 
-**Time Tracking**
-- Built-in timers with start, pause, resume, stop
-- Quick Start mode for instant timer launch
-- Sidebar timer widget with global visibility
-- Manual time entry with descriptions and quick minute presets
-- Billable vs. non-billable hours
-- Configurable rounding (0/15/30/60 min)
-- Cost rates per user, billing rates per organization, and optional custom rates per ticket with admin sidebar override
-- Time reports with optional custom report rates, PDF, and CSV export
-
-**Notifications**
-- In-app notification center with full-page view
-- Notifications grouped by ticket
-- Header dropdown with real-time badge count
-- Dashboard notification widget
-- Email notifications for ticket events
-- Browser push notifications with one-click opt-in
-- Per-user notification preferences (email, in-app, sound)
-
-**Reporting & Analytics**
-- Report builder with date ranges and filters
-- Financial reports (billable, cost, profit)
-- Public shareable report links with expiration
-- Dashboard KPI cards and activity feed
-- User activity tracking (admin)
-
-**AI Agent Integration**
-- REST API for AI automation
-- Agent Connect page with system prompt generator
-- Bearer token authentication with usage tracking
-- Endpoints for ticket creation, lookup, status updates, comments, time logs, and metadata lists
-
-**Email Integration**
-- Microsoft 365 / Outlook OAuth2 integration for inbound and outbound mail
-- IMAP email-to-ticket ingest with sender whitelist
-- Inbound email attachments linked directly to ticket threads
-- SMTP notifications with customizable templates
-- CC/BCC recipients on ticket replies
-
-See [Microsoft 365 and Outlook mail setup](docs/MICROSOFT_365_MAIL.md).
-
-**User Roles**
-- **Admin** — Full access, settings, user management, reports, AI agents
-- **Agent** — Ticket handling, time tracking, internal notes
-- **Client** — Submit and view own tickets, reply
-
-**Organizations & Clients**
-- Organization management with contact info and billing rates
-- Client portal with limited ticket access
-- Multi-organization user assignment
-
-**Recurring Tasks**
-- Scheduled ticket creation (weekly, monthly, yearly, custom)
-- Configurable assignee, type, priority, organization
-
-**PWA Support**
-- Installable as desktop and mobile app
-- Dynamic app manifest with custom icons
-
-**Multi-language**
-- 24 application languages in the shared locale registry
-- English, Czech, German, Spanish, and Italian are stable in the self-hosted channel; the other 19 translations are marked beta
-- RTL layouts for Arabic, Hebrew, Persian, and Urdu, plus CJK input handling
-- Per-user language preference
-
-**Auto-Updates**
-- One-click update from admin panel
-- Automatic backup before each update
-- Manual ZIP upload for offline environments
-- Dual-source checking (foxdesk.net + GitHub)
-
-**Security & Ops**
-- TOTP 2FA with backup codes and optional per-role enforcement
-- Attachment downloads respect ticket access and public share permissions
-- Database-backed sessions survive app or container restarts
-- Public health check endpoint for uptime monitoring
-- Post-update health checks and automatic maintenance recovery
-
-**More**
-- Dark mode with CSS variable theming
-- Responsive design (mobile, tablet, desktop)
-- Keyboard shortcuts
-- Pseudo-cron (works without system cron)
-- Remember-me persistent login
-- Allowed senders management for email ingest
-
----
-
-## Screenshots
-
-These screenshots show the public self-hosted edition with local demonstration data.
-
-| Dashboard | Ticket detail |
+| Self-hosted | FoxDesk Cloud |
 | --- | --- |
-| [![FoxDesk self-hosted dashboard](docs/screenshots/dashboard-light.png)](docs/screenshots/dashboard-light.png) | [![FoxDesk self-hosted ticket detail](docs/screenshots/ticket-detail-light.png)](docs/screenshots/ticket-detail-light.png) |
+| The edition in this repository. Install it on your infrastructure and keep operational control. | The managed service for teams that do not want to install, update, back up, or operate FoxDesk. |
+| AGPL-3.0, PHP 8.1+, MySQL or MariaDB. | Hosted separately at [foxdesk.net](https://foxdesk.net/comparison/?utm_source=github.com&utm_medium=referral&utm_campaign=foxdesk_open_source). |
+| Includes tickets, clients, time tracking, reports, email integration, API access, updates, and all 24 locale catalogs. | Adds managed hosting, tenant lifecycle, subscriptions, backups, and Cloud operations. Those modules are not part of this repository. |
 
-| Tickets | Reports |
-| --- | --- |
-| [![FoxDesk self-hosted ticket list](docs/screenshots/tickets-light.png)](docs/screenshots/tickets-light.png) | [![FoxDesk self-hosted reports](docs/screenshots/reports-light.png)](docs/screenshots/reports-light.png) |
+## Install in a few minutes
 
-The full light and dark screenshot set is stored in [docs/screenshots](docs/screenshots).
-Regenerate them from a clean local install with:
-
-```bash
-npm run local:screenshots
-```
-
-The screenshots are generated from the same Docker/Playwright environment used
-by the E2E tests, with a small local demo dataset for the dashboard, tickets,
-ticket detail, and reports.
-
----
-
-## Requirements
+1. [Download the latest release](https://github.com/lukashanes/foxdesk/releases/latest) and extract it on the server.
+2. Create an empty MySQL or MariaDB database.
+3. Copy `config.example.php` to `config.php` and enter the database credentials.
+4. Open `https://your-domain.example/install.php` and complete the installer.
+5. Delete `install.php`, sign in, and create the first client organization.
 
 | Requirement | Minimum |
-|-------------|---------|
-| PHP         | 8.1     |
-| MySQL       | 5.7+ / MariaDB 10.2+ |
-| Disk space  | 50 MB   |
+| --- | --- |
+| PHP | 8.1 |
+| Database | MySQL 5.7+ or MariaDB 10.2+ |
+| PHP extensions | `pdo_mysql`, `mbstring`, `json`, `openssl`, `zip` |
+| Initial disk space | 50 MB plus uploaded files and backups |
 
-Required PHP extensions: `pdo_mysql`, `mbstring`, `json`, `openssl`, `zip`
+The detailed guide covers [shared hosting, VPS, Nginx, scheduled tasks, email, upgrades, and recovery](INSTALL.md).
 
----
+## See the product
 
-## Quick Start
+### A populated ticket queue
 
-1. Upload files to your web server
-2. Create a MySQL database
-3. Copy `config.example.php` to `config.php` and edit credentials
-4. Open `https://your-domain.tld/install.php`
-5. Follow the installer (database setup + admin account)
-6. Delete `install.php`
-7. Log in and start using FoxDesk
+[![FoxDesk ticket queue with multiple clients, owners, priorities, due dates, and recorded time](docs/screenshots/tickets-light.png)](docs/screenshots/tickets-light.png)
 
-See [INSTALL.md](INSTALL.md) for detailed instructions including shared hosting, VPS, Nginx, cron jobs, and email setup.
+### Work and time in the same client context
 
----
+[![FoxDesk ticket detail with client messages, internal notes, ownership, and work logs](docs/screenshots/ticket-detail-light.png)](docs/screenshots/ticket-detail-light.png)
 
-## Tech Stack
+### Real time before the report is shared
 
-- **Backend:** PHP 8.1+ (no framework)
-- **Database:** MySQL / MariaDB
-- **Frontend:** Tailwind CSS, Alpine.js
-- **Styling:** Custom `theme.css` with dark mode support
+[![FoxDesk time report with five clients, four agents, and detailed work logs](docs/screenshots/reports-light.png)](docs/screenshots/reports-light.png)
 
----
+### Client organizations with their own rates and work history
 
-## Project Structure
+[![FoxDesk client organizations with rates and recorded time](docs/screenshots/clients-light.png)](docs/screenshots/clients-light.png)
 
-```
+### The same ticket remains usable on mobile
+
+<p align="center">
+  <a href="docs/screenshots/ticket-detail-mobile-light.png"><img src="docs/screenshots/ticket-detail-mobile-light.png" width="390" alt="FoxDesk mobile ticket detail"></a>
+</p>
+
+Dark-mode versions and the reproducible screenshot workflow are in [docs/screenshots](docs/screenshots).
+
+## What is included
+
+### Client requests and ownership
+
+- Email-to-ticket through IMAP or Microsoft 365 OAuth2
+- Portal requests, public replies, internal notes, attachments, and secure share links
+- Custom statuses, priorities, ticket types, tags, assignees, and due dates
+- List and board views, bulk actions, full-text search, and edit history
+- Separate company and contact records with client-specific access
+
+### Recorded work and client reports
+
+- Start, pause, resume, and stop timers from the ticket or global sidebar
+- Exact manual entries, billable or internal work, and optional rounding
+- Cost rates per user, billing rates per client, and ticket-level overrides
+- Report review by client, agent, tag, and period
+- Shareable client reports plus CSV and print export
+- Scheduled weekly, monthly, quarterly, or custom recurring tickets
+
+### Email, access, and operations
+
+- Microsoft 365 and Outlook OAuth2 for inbound and outbound mail
+- IMAP intake, SMTP delivery, ticket attachments, CC, and BCC
+- Admin, agent, and client roles with organization-scoped access
+- TOTP two-factor authentication and backup codes
+- Automatic backups before updates, recovery mode, and health checks
+- Pseudo-cron fallback for shared hosting plus optional system cron
+
+### Languages and devices
+
+- 24 application locale catalogs from one shared registry
+- All 24 locales are selectable in the application; translation maturity varies by locale
+- Right-to-left layouts for Arabic, Hebrew, Persian, and Urdu
+- CJK-aware input handling for Chinese, Japanese, and Korean
+- Responsive interface, dark mode, and installable PWA
+
+## Connect coding agents and automations
+
+FoxDesk exposes scoped bearer-token endpoints for ticket lookup and creation, status changes, comments, and time entries. A connected coding agent can report completed work to the correct client ticket instead of leaving the useful result inside a closed thread.
+
+The repository includes:
+
+- [Agent API quick start](docs/AGENT_API_QUICKSTART.md)
+- [MCP server setup for Codex, Claude Code, Cursor, and compatible clients](docs/AGENT_MCP_SERVER.md)
+- [Example MCP implementation](examples/agent-api/README.md)
+- [Permission and operating guidance](docs/AGENT_API_CONTROL.md)
+
+Tokens inherit the creating user's permissions and can be limited by capability. Do not paste production tokens into prompts, issues, or logs.
+
+## Current release
+
+The latest packaged version is [FoxDesk 0.3.140](https://github.com/lukashanes/foxdesk/releases/tag/v0.3.140), published on August 18, 2026.
+
+It makes client companies the primary Clients view, separates companies from portal contacts, improves narrow-screen administration, and retains the Microsoft 365 mail, reporting, security, and 24-locale work delivered in 0.3.139.
+
+Use the in-app updater or download the release assets from [GitHub Releases](https://github.com/lukashanes/foxdesk/releases). Every release includes upgrade notes, rollback guidance, a manifest, and SHA-256 evidence.
+
+## Development
+
+FoxDesk uses PHP without a backend framework, MySQL or MariaDB, Alpine.js, Tailwind CSS, and a custom token-based UI system.
+
+```text
 index.php              Entry point and router
-config.example.php     Configuration template
-install.php            Web installer
-upgrade.php            Database migration tool
-rescue.php             Emergency recovery
-theme.css              Custom styles + dark mode
-tailwind.min.css       Tailwind CSS
-version.json           Version info for auto-updates
-assets/js/             JavaScript modules
-includes/              Core PHP (auth, DB, functions, API, languages)
-includes/api/          REST API handlers
-includes/components/   Reusable UI components
-includes/lang/         Translation files
-pages/                 Page controllers
-pages/admin/           Admin panel pages
-bin/                   CLI scripts (cron, email ingest, maintenance)
+includes/              Authentication, data access, API, email, and shared modules
+includes/components/   Reusable interface components
+pages/                 Page controllers and views
+assets/js/             Browser modules
+locales/catalogs/      Translation source catalogs
+bin/                   Maintenance, localization, build, and audit tools
+tests/                 PHP contracts and Playwright workflows
 ```
 
----
-
-## Cron Jobs
+Install JavaScript test dependencies with `npm ci`. The most important repository checks are:
 
 ```bash
-# Email ingest (every 5 min, if IMAP enabled)
-*/5 * * * * php /path/to/bin/ingest-emails.php
-
-# Recurring tasks (hourly)
-0 * * * * php /path/to/bin/process-recurring-tasks.php
-
-# Maintenance (daily)
-0 3 * * * php /path/to/bin/run-maintenance.php
+npm run test:i18n
+npm run test:shared-behavior
+npm run test:core-parity
+npm run test:security-boundary
 ```
 
-FoxDesk also includes a **pseudo-cron** system that runs tasks on page load, so cron jobs are optional on shared hosting. IMAP email ingest has an extra inline fallback: if the server blocks loopback HTTP requests, a normal app reload can still process incoming mail at most once every 5 minutes.
+See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Questions and installation help belong in [GitHub Discussions](https://github.com/lukashanes/foxdesk/discussions). Reproducible bugs belong in [GitHub Issues](https://github.com/lukashanes/foxdesk/issues).
 
----
+## Repository scope
 
-## API
+This repository is the public release channel for the self-hosted edition. Contributions should improve self-hosted installation, security, local email, ticket and reporting workflows, API integrations, translations, updates, or recovery.
 
-FoxDesk includes a REST API for automation and AI agent integrations.
+FoxDesk Cloud billing, subscription trials, tenant lifecycle, managed storage, operator administration, and platform deployment are commercial service modules. They are intentionally not published here. The self-hosted reporting rates in this repository are client-work features, not FoxDesk subscription billing.
 
-**Endpoints:**
-- `GET agent-me` — Current token identity
-- `GET agent-list-statuses` — List ticket statuses
-- `GET agent-list-priorities` — List priority levels
-- `GET agent-list-users` — List users / agents
-- `POST agent-create-ticket` — Create tickets
-- `GET agent-get-ticket` — Fetch full ticket detail
-- `POST agent-update-status` — Change ticket status
-- `POST agent-add-comment` — Add comments
-- `POST agent-log-time` — Log time entries
-- `GET agent-list-tickets` — List and filter tickets
+## Security
 
-Authentication via Bearer token generated in **Settings -> API & agents**. Tokens
-inherit the creator's permissions and can be scoped by capability.
-
-The **Agent Connect** page provides a ready-to-use system prompt and API documentation for connecting AI models.
-
----
+Please do not disclose vulnerabilities in public issues. Use [GitHub private vulnerability reporting](https://github.com/lukashanes/foxdesk/security/advisories/new) and follow [SECURITY.md](SECURITY.md).
 
 ## License
 
-GNU Affero General Public License v3 (AGPL-3.0). See [LICENSE.md](LICENSE.md).
+FoxDesk self-hosted is licensed under the [GNU Affero General Public License v3.0](LICENSE.md).
 
-Created by [Lukas Hanes](https://lukashanes.com).
+Created by [Lukas Hanes](https://lukashanes.com) and [AENZE](https://aenze.com/work/foxdesk/).

@@ -1,0 +1,19 @@
+title: "[Show and tell] "
+body:
+  - type: textarea
+    id: workflow
+    attributes:
+      label: What did you build with FoxDesk?
+      description: Explain the workflow and the result for your team or clients.
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: Setup notes
+      description: Share reusable configuration or integration details without secrets.
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots or links
+      description: Use only material you are allowed to publish.
