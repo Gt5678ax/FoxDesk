@@ -1,0 +1,67 @@
+name: Bug report
+description: Report a reproducible problem in the self-hosted edition
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve FoxDesk. Remove passwords, tokens, email contents, and customer data before submitting.
+  - type: input
+    id: version
+    attributes:
+      label: FoxDesk version
+      description: Use the version shown in Settings or the release tag.
+      placeholder: v0.3.140
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include PHP, database, web server, browser, and operating system where relevant.
+      placeholder: PHP 8.3, MariaDB 10.11, Nginx, Firefox 129, Debian 12
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Give the shortest sequence that reliably shows the problem.
+      placeholder: |
+        1. Open ...
+        2. Select ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized logs or screenshots
+      description: Drag files here after removing secrets and private information.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and discussions.
+          required: true
+        - label: This affects the self-hosted edition in this public repository.
+          required: true
+        - label: I removed secrets, customer data, and personal information.
+          required: true
+        - label: This is not a security vulnerability.
+          required: true

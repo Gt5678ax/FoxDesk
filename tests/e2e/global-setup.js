@@ -35,13 +35,38 @@ function cleanupExisting() {
   } catch (_) {}
 }
 
+function copyApplicationTree() {
+  const excludedPaths = [
+    '.git',
+    'config.php',
+    'uploads',
+    'storage',
+    'backups',
+    'node_modules',
+    'test-results',
+    'playwright-report',
+    'tests/e2e/.auth'
+  ];
+
+  fs.cpSync(repoRoot, tmpDir, {
+    recursive: true,
+    filter(source) {
+      const relativePath = path.relative(repoRoot, source).split(path.sep).join('/');
+      if (relativePath === '') return true;
+      return !excludedPaths.some(excludedPath =>
+        relativePath === excludedPath || relativePath.startsWith(`${excludedPath}/`)
+      );
+    }
+  });
+}
+
 function buildPhpImageIfMissing() {
   try {
     docker(['image', 'inspect', phpImage], { stdio: 'ignore' });
     return;
   } catch (_) {}
 
-  const dockerfile = path.join('/tmp', `${phpImage}.Dockerfile`);
+  const dockerfile = path.join(path.dirname(tmpDir), `${phpImage}.Dockerfile`);
   fs.writeFileSync(
     dockerfile,
     [
@@ -53,7 +78,7 @@ function buildPhpImageIfMissing() {
       ''
     ].join('\n')
   );
-  docker(['build', '-t', phpImage, '-f', dockerfile, '/tmp'], { stdio: 'inherit' });
+  docker(['build', '-t', phpImage, '-f', dockerfile, path.dirname(dockerfile)], { stdio: 'inherit' });
 }
 
 function waitForDb() {
@@ -190,20 +215,7 @@ async function saveAdminStorageState() {
 module.exports = async function globalSetup() {
   cleanupExisting();
   fs.rmSync(tmpDir, { recursive: true, force: true });
-  run('rsync', [
-    '-a',
-    '--exclude', '.git',
-    '--exclude', 'config.php',
-    '--exclude', 'uploads',
-    '--exclude', 'storage',
-    '--exclude', 'backups',
-    '--exclude', 'node_modules',
-    '--exclude', 'test-results',
-    '--exclude', 'playwright-report',
-    '--exclude', 'tests/e2e/.auth',
-    `${repoRoot}/`,
-    `${tmpDir}/`
-  ]);
+  copyApplicationTree();
 
   buildPhpImageIfMissing();
   docker(['network', 'create', network], { stdio: 'ignore' });
