@@ -10,7 +10,7 @@
 <?php if (can_edit_ticket($ticket, $user)): ?>
         <div id="edit-ticket-modal" class="modal-overlay hidden" aria-labelledby="edit-ticket-title" role="dialog"
             aria-modal="true">
-            <div class="modal-backdrop" onclick="closeEditTicketModal()"></div>
+            <div class="modal-backdrop" data-ticket-edit-close></div>
             <div class="modal-panel max-w-2xl">
                 <form method="post" id="edit-ticket-form" class="modal-panel-form">
                     <?php echo csrf_field(); ?>
@@ -120,7 +120,7 @@
                         </div>
                     </div>
                     <div class="modal-panel-footer">
-                        <button type="button" onclick="closeEditTicketModal()"
+                        <button type="button" data-ticket-edit-close
                             class="btn btn-secondary"><?php echo e(t('Cancel')); ?></button>
                         <button type="submit"
                             class="btn btn-primary"><?php echo e(t('Save changes')); ?></button>

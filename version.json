@@ -1,12 +1,11 @@
 {
-    "version": "0.3.141",
+    "version": "0.3.142",
     "date": "2026-09-01",
     "min_php": "8.1",
     "changelog": [
-        "Ticket details now provide one complete editor for subject, description, tags, status, priority, assignee, client, due date, and the optional custom billable rate",
-        "Ticket edits validate permissions and available workflow options, then save field history and status transitions atomically",
-        "The compact mobile editor scrolls independently and keeps Cancel and Save changes reachable on narrow screens",
-        "Clearing optional ticket fields is now recorded in edit history"
+        "Ticket editing controls now work with strict Content Security Policy headers",
+        "The ticket editor can be opened, cancelled, or closed with Escape without inline JavaScript handlers",
+        "Complete ticket editing from version 0.3.141 remains available across all supported fields"
     ],
     "delete_files": []
 }

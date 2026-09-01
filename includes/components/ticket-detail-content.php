@@ -62,6 +62,7 @@
                         <button type="button"
                             <?php if (!empty($action['id'])): ?>id="<?php echo e($action['id']); ?>"<?php endif; ?>
                             <?php if (!empty($action['onclick'])): ?>onclick="<?php echo e($action['onclick']); ?>"<?php endif; ?>
+                            <?php if (($action['key'] ?? '') === 'edit'): ?>data-ticket-edit-open<?php endif; ?>
                             title="<?php echo e($action_title); ?>" aria-label="<?php echo e($action_title); ?>"
                             class="<?php echo e($action_class); ?>">
                             <?php echo get_icon($action['icon'], 'w-4 h-4'); ?>

@@ -18,6 +18,15 @@
     var formatTimeInput = runtime.formatTimeInput;
     var formatDateTimeLocal = runtime.formatDateTimeLocal;
 
+    function initTicketEditModalControls() {
+        document.querySelectorAll('[data-ticket-edit-open]').forEach(function (button) {
+            button.addEventListener('click', window.openEditTicketModal);
+        });
+        document.querySelectorAll('[data-ticket-edit-close]').forEach(function (button) {
+            button.addEventListener('click', window.closeEditTicketModal);
+        });
+    }
+
     ready(function () {
         runtime.initUploadPreview();
         runtime.initShareCopy();
@@ -29,6 +38,7 @@
         runtime.initAgentCcDropdown();
         runtime.initEditTimeForm();
         runtime.initTags();
+        initTicketEditModalControls();
         runtime.initQuillEditors();
         runtime.initImagePreview();
         runtime.initAutosave();
@@ -53,6 +63,7 @@
             if (event.key !== 'Escape') return;
             window.closeEditCommentModal();
             window.closeEditTimeModal();
+            window.closeEditTicketModal();
             var timeline = document.getElementById('timeline-overlay');
             if (timeline && timeline.classList.contains('is-open')) window.closeTimeline();
         });

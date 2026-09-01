@@ -186,7 +186,6 @@ function ticket_detail_primary_actions(array $ticket, array $user, array $status
             'icon' => 'edit',
             'style' => 'ghost',
             'type' => 'button',
-            'onclick' => 'openEditTicketModal()',
             'title' => 'Edit ticket details.',
             'visible' => true,
         ];
