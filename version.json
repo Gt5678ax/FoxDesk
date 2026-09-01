@@ -1,11 +1,11 @@
 {
-    "version": "0.3.142",
+    "version": "0.3.143",
     "date": "2026-09-01",
     "min_php": "8.1",
     "changelog": [
-        "Ticket editing controls now work with strict Content Security Policy headers",
-        "The ticket editor can be opened, cancelled, or closed with Escape without inline JavaScript handlers",
-        "Complete ticket editing from version 0.3.141 remains available across all supported fields"
+        "Authenticated comment authors can edit their own sent comments",
+        "Administrators retain permission to edit any comment while other users remain blocked",
+        "Comment editing now uses the same creator-or-admin permission rule in the UI and backend"
     ],
     "delete_files": []
 }
