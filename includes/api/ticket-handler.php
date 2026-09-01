@@ -1199,7 +1199,7 @@ function api_edit_comment() {
     require_csrf_token(true);
 
     $user = current_user();
-    if (!$user || (!is_agent() && !is_admin())) {
+    if (!$user) {
         api_error('Unauthorized', 401);
     }
 
@@ -1222,8 +1222,7 @@ function api_edit_comment() {
         api_error('Forbidden', 403);
     }
 
-    // Agents can only edit their own comments; admins can edit any
-    if (is_agent() && !is_admin() && (int)$comment['user_id'] !== (int)$user['id']) {
+    if (!can_manage_comment($comment, $user)) {
         api_error('Forbidden', 403);
     }
 
