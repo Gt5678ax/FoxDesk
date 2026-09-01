@@ -139,7 +139,7 @@ Tokens inherit the creating user's permissions and can be limited by capability.
 
 ## Current release
 
-The latest packaged version is [FoxDesk 0.3.141](https://github.com/lukashanes/foxdesk/releases/tag/v0.3.141), published on September 1, 2026.
+The latest packaged version is [FoxDesk 0.3.142](https://github.com/lukashanes/foxdesk/releases/tag/v0.3.142), published on September 1, 2026.
 
 It adds a complete compact ticket editor for subject, status, priority, assignee, requester, client, due date, tags, and custom fields while preserving existing reply, attachment, and time-entry workflows.
 

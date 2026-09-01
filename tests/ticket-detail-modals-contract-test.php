@@ -36,9 +36,13 @@ foreach ([
     'name="edit_organization_id"',
     'name="edit_due_date"',
     'maxlength="255"',
+    'data-ticket-edit-close',
 ] as $needle) {
     $assert(str_contains($modals, $needle), 'Full ticket editor missing: ' . $needle);
 }
+
+$assert(!str_contains($modals, 'onclick="closeEditTicketModal()"'), 'Ticket editor close controls must work under the production CSP.');
+$assert(str_contains($content, 'data-ticket-edit-open'), 'Ticket editor opener must work under the production CSP.');
 
 foreach ([
     "array_key_exists('edit_status_id', \$_POST)",
