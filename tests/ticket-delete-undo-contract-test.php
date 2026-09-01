@@ -16,6 +16,10 @@ $schema = $read('includes/schema.sql');
 $userFunctions = $read('includes/user-functions.php');
 $detail = $read('assets/js/ticket-detail-core.js') . "\n" . $read('assets/js/ticket-detail-records.js');
 $page = $read('pages/ticket-detail.php');
+$editCommentStart = strpos($handler, 'function api_edit_comment()');
+$deleteCommentStart = strpos($handler, 'function api_delete_comment()');
+$assert($editCommentStart !== false && $deleteCommentStart !== false && $deleteCommentStart > $editCommentStart, 'Comment edit handler boundaries are missing.');
+$editCommentHandler = substr($handler, $editCommentStart, $deleteCommentStart - $editCommentStart);
 
 foreach (["'restore-time-entry' => 'api_restore_time_entry'", "'restore-comment' => 'api_restore_comment'", "'restore-attachment' => 'api_restore_attachment'"] as $route) {
     $assert(str_contains($router, $route), "Missing restore route: {$route}");
@@ -28,6 +32,8 @@ foreach (['time-entry', 'comment', 'attachment'] as $resource) {
     $assert(str_contains($handler, "'undo_action' => 'restore-{$resource}'"), "Missing {$resource} undo response.");
 }
 $assert(str_contains($userFunctions, 'function can_manage_comment'), 'Comment permission helper is missing.');
+$assert(!str_contains($editCommentHandler, '!is_agent() && !is_admin()'), 'Comment edit must not reject an authenticated author before the shared ownership check.');
+$assert(str_contains($editCommentHandler, 'if (!can_manage_comment($comment, $user))'), 'Comment edit must enforce shared creator-or-admin permission.');
 $assert(str_contains($userFunctions, 'function can_manage_time_entry'), 'Time permission helper is missing.');
 $assert(str_contains($detail, 'showUndoToast'), 'Ticket detail must show an Undo action.');
 $assert(str_contains($detail, 'restoreDeletedItem'), 'Ticket detail must call restore endpoints.');
