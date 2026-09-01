@@ -1,23 +1,12 @@
 {
-    "version": "0.3.140",
-    "date": "2026-08-18",
+    "version": "0.3.141",
+    "date": "2026-09-01",
     "min_php": "8.1",
     "changelog": [
-        "Client companies are now the primary Clients view, with separate Companies and Contacts navigation and a visible Add company action",
-        "On narrower screens, the company and contact forms appear before long client lists so administrators can add records without searching below the list",
-        "Workspace administrators can set one default language while users inherit it or keep a personal preference",
-        "The language profile now clearly distinguishes a workspace default from a user-specific override",
-        "Microsoft 365 and Outlook mailboxes can connect through OAuth2 for inbound tickets and outbound notifications without storing the mailbox password",
-        "Microsoft Graph credentials and refresh tokens are encrypted at rest, with independent inbound and outbound controls",
-        "Report previews now keep real tracked time separate from optional billable rounding",
-        "The self-hosted release boundary now rejects private SaaS routes and backend modules",
-        "Migration parity now uses stable semantic IDs and verified checksums",
-        "FoxDesk now ships complete runtime catalogs for 24 locales",
-        "Arabic, Hebrew, Persian, and Urdu receive right-to-left layout, bidi isolation, and semantic directional icons",
-        "Chinese, Japanese, and Korean input now respects IME composition and CJK-aware search behavior",
-        "Locale-aware dates, numbers, plurals, fonts, e-mails, reports, and public views are available throughout the application",
-        "Language identifiers now support canonical regional and script tags such as pt-BR, zh-Hans, and zh-Hant",
-        "Translation catalog, placeholder, plural, CSS direction, and generated-file checks are enforced by the release pipeline"
+        "Ticket details now provide one complete editor for subject, description, tags, status, priority, assignee, client, due date, and the optional custom billable rate",
+        "Ticket edits validate permissions and available workflow options, then save field history and status transitions atomically",
+        "The compact mobile editor scrolls independently and keeps Cancel and Save changes reachable on narrow screens",
+        "Clearing optional ticket fields is now recorded in edit history"
     ],
     "delete_files": []
 }
