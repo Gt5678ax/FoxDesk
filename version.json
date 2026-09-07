@@ -1,14 +1,11 @@
 {
-    "version": "0.3.147",
+    "version": "0.3.148",
     "date": "2026-09-07",
     "min_php": "8.1",
     "changelog": [
-        "Keep next-ticket navigation within the selected queue and skip repeated activity links",
-        "Complete and reopen tickets directly from their detail, with status undo and queue navigation",
-        "Claim and hand off tickets with optional internal notes",
-        "Save replies, time and status together; preserve unsent drafts and show recipients",
-        "Add revision-checked, idempotent workflow actions for API and MCP agents",
-        "Improve compact ticket queues and localize workflow controls in all 24 languages"
+        "Default the Work dashboard to the current calendar month",
+        "Keep every selected period and custom date range across reloads and navigation",
+        "Retain personal/team time scope; separate read-only data requests from saved dashboard preferences"
     ],
     "delete_files": []
 }
