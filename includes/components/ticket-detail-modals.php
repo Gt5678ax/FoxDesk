@@ -15,6 +15,7 @@
                 <form method="post" id="edit-ticket-form" class="modal-panel-form">
                     <?php echo csrf_field(); ?>
                     <input type="hidden" name="update_ticket" value="1">
+                    <input type="hidden" name="expected_revision" value="<?php echo e(ticket_workflow_revision((int) $ticket_id)); ?>">
                     <div class="modal-panel-body">
                         <h3 class="text-base font-semibold mb-4 flex items-center gap-2 text-theme-primary"
                             id="edit-ticket-title">
@@ -75,7 +76,7 @@
                                             </select>
                                         </div>
                                         <div>
-                                            <label for="edit-ticket-assignee" class="block text-xs font-medium mb-1 text-theme-muted"><?php echo e(t('Assigned')); ?></label>
+                                            <label for="edit-ticket-assignee" class="block text-xs font-medium mb-1 text-theme-muted"><?php echo e(t('workflow.assigned')); ?></label>
                                             <select name="edit_assignee_id" id="edit-ticket-assignee" class="form-select w-full">
                                                 <option value=""><?php echo e(t('-- Unassigned --')); ?></option>
                                                 <?php foreach (($_sidebar_agents ?? []) as $agent): ?>

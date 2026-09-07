@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (mb_strlen($new_title) > 255) {
-            flash(t('Failed to update ticket.'), 'error');
+            flash($error instanceof DomainException ? $error->getMessage() : t('Failed to update ticket.'), 'error');
             redirect('ticket', ['id' => $ticket_id]);
         }
 
@@ -237,6 +237,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $status_transition = null;
         try {
             $db->beginTransaction();
+            $ticket = ticket_workflow_lock($ticket, $user, (string) ($_POST['expected_revision'] ?? ''));
             if ($changed_data !== [] && !update_ticket_with_history($ticket_id, $changed_data, $user['id'])) {
                 throw new RuntimeException('Ticket fields could not be updated.');
             }
@@ -314,6 +315,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Start timer
     if (isset($_POST['start_timer']) && is_agent()) {
+        if (ticket_detail_is_done($ticket) || !empty($ticket['is_archived'])) {
+            flash(t('workflow.reopen'), 'error');
+            redirect('ticket', ['id' => $ticket_id]);
+        }
         if (!ticket_time_table_exists()) {
             flash(t('Time tracking is not available.'), 'error');
             redirect('ticket', ['id' => $ticket_id]);
@@ -365,6 +370,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Add comment
     if (isset($_POST['add_comment'])) {
+        $workflow_draft = substr((string) ($_POST['workflow_draft'] ?? ''), 0, 64);
+        if ($workflow_draft !== '' && hash_equals((string) ($_SESSION['ticket_workflow_ack'][$ticket_id] ?? ''), $workflow_draft)) {
+            redirect('ticket', ['id' => $ticket_id]);
+        }
+
         $skip_notification = isset($_POST['skip_notification']) && $_POST['skip_notification'] == '1';
         $attachment_upload_errors = [];
         $has_uploadable_attachments = false;
@@ -398,35 +408,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             && $pending_public_comment_text !== ''
             && !$skip_notification;
 
-        // Handle status change first (if agent)
+        $new_status = null;
+        $old_status = get_status((int) $ticket['status_id']);
+        $new_status_id = (int) $ticket['status_id'];
         if (isset($_POST['change_status_with_comment']) && is_agent()) {
-            $new_status_id = (int) ($_POST['status_id'] ?? $ticket['status_id']);
-
-            // Only update if status changed
-            if ($new_status_id != $ticket['status_id']) {
-                $old_status = get_status($ticket['status_id']);
-                $new_status = get_status($new_status_id);
-
-                ticket_transition_status($ticket, $old_status, $new_status, (int) $user['id']);
-
-                // Send status change notification (unless skipped)
-                if (!$skip_notification && !$will_send_public_comment_notification) {
-                    require_once BASE_PATH . '/includes/mailer.php';
-                    send_status_change_notification($ticket, $old_status, $new_status, '', 0);
-                }
-
-                // In-app notification for status change
-                if (!$will_send_public_comment_notification && function_exists('ticket_event_dispatch_in_app')) {
-                    ticket_event_dispatch_in_app('ticket.status_changed', $ticket_id, $user['id'], [
-                        'old_status' => $old_status['name'] ?? '',
-                        'new_status' => $new_status['name'] ?? '',
-                    ]);
-                }
-
-                // Auto-resolve action notifications if ticket is now closed
-                if (!empty($new_status['is_closed']) && function_exists('resolve_action_notifications')) {
-                    resolve_action_notifications($ticket_id);
-                }
+            $outcome = (string) ($_POST['workflow_outcome'] ?? '');
+            $new_status_id = in_array($outcome, ['done', 'waiting'], true)
+                ? (int) ticket_workflow_target(get_statuses(), $outcome)
+                : (int) ($_POST['status_id'] ?? $ticket['status_id']);
+            $new_status = get_status($new_status_id);
+            if (!$new_status || !can_edit_ticket($ticket, $user)) {
+                flash(t('workflow.save_failed'), 'error');
+                redirect('ticket', ['id' => $ticket_id]);
             }
         }
 
@@ -434,7 +427,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $content = $pending_content;
 
         $cc_users = isset($_POST['cc_users']) ? array_map('intval', $_POST['cc_users']) : [];
-        $stop_timer = is_agent() && isset($_POST['stop_timer']);
+        $stop_timer = is_agent() && (isset($_POST['stop_timer']) || ($new_status && ticket_status_group_from_status($new_status) === 'done'));
         $manual_date_input = trim($_POST['manual_date'] ?? date('Y-m-d'));
         $manual_duration_input = trim((string) ($_POST['manual_duration_minutes'] ?? ''));
         $manual_start_time_input = trim($_POST['manual_start_time'] ?? '');
@@ -522,6 +515,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $comment_time_spent += $timer_duration;
             }
         }
+
+        if ($manual_requested && $stop_timer && $active_timer) {
+            flash(t('workflow.timer_manual_conflict'), 'error');
+            redirect('ticket', ['id' => $ticket_id]);
+        }
+
+        $workflow_db = get_db();
+        try {
+            $workflow_db->beginTransaction();
+            $ticket = ticket_workflow_lock($ticket, $user, (string) ($_POST['expected_revision'] ?? ''));
+            if ($new_status && (int) $ticket['status_id'] !== $new_status_id) {
+                $old_status = get_status((int) $ticket['status_id']);
+                ticket_transition_status($ticket, $old_status, $new_status, (int) $user['id'], ['stop_timer' => false]);
+            }
 
         // Add comment only if there's content or attachments
         $comment_id = null;
@@ -637,24 +644,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Send notification (only for non-internal comments with content and if not skipped)
-
-        if ($comment_id && !$is_internal && !empty($content) && !$skip_notification) {
-            require_once BASE_PATH . '/includes/mailer.php';
-            $comment_data = [
-                'content' => $content,
-                'time_spent' => $comment_time_spent
-            ];
-            send_new_comment_notification($ticket, $comment_data, $user, $comment_id, $uploaded_attachments, $cc_users);
+            $workflow_db->commit();
+        } catch (Throwable $error) {
+            if ($workflow_db->inTransaction()) $workflow_db->rollBack();
+            error_log('Ticket update failed: ' . $error->getMessage());
+            flash($error instanceof DomainException ? $error->getMessage() : t('workflow.save_failed'), 'error');
+            redirect('ticket', ['id' => $ticket_id]);
+        }
+        $_SESSION['ticket_workflow_ack'][$ticket_id] = substr((string) ($_POST['workflow_draft'] ?? ''), 0, 64);
+        if ($new_status && (int) $old_status['id'] !== $new_status_id) {
+            ticket_workflow_notify(array_merge($ticket, ['status_id' => (int) $old_status['id']]), get_ticket($ticket_id), $user, !$skip_notification && !$will_send_public_comment_notification);
         }
 
-        // In-app notification for new comment
-        if ($comment_id && !$is_internal && !empty($content) && function_exists('ticket_event_dispatch_in_app')) {
-            $preview = mb_strlen($content) > 80 ? mb_substr($content, 0, 77) . '...' : $content;
-            ticket_event_dispatch_in_app(ticket_event_comment_name($user, false), $ticket_id, $user['id'], [
-                'comment_preview' => strip_tags($preview),
-                'comment_id' => $comment_id,
-            ]);
+        if ($comment_id && !$is_internal && !empty($content)) {
+            ticket_workflow_comment_notify(get_ticket($ticket_id), ['content' => $content, 'time_spent' => $comment_time_spent], $user, (int) $comment_id, $uploaded_attachments, $cc_users, !$skip_notification);
         }
 
         // If assignee is commenting, resolve their action-required notifications
@@ -687,6 +690,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Change status
     if (isset($_POST['change_status']) && is_agent()) {
+        if (!empty($_POST['expected_revision'])) {
+            try {
+                ticket_workflow_apply($ticket, $user, ['operation' => 'status', 'status_id' => (int) ($_POST['status_id'] ?? 0), 'expected_revision' => (string) $_POST['expected_revision']]);
+                flash(t('workflow.saved'), 'success');
+            } catch (DomainException $error) { flash($error->getMessage(), 'error'); }
+            redirect('ticket', ['id' => $ticket_id]);
+        }
+
         $new_status_id = (int) $_POST['status_id'];
         $status_comment = trim($_POST['status_comment'] ?? '');
         $old_status = get_status($ticket['status_id']);

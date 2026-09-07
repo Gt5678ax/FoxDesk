@@ -12,6 +12,7 @@ require_once __DIR__ . '/../admin-crud-helper.php';
 require_once __DIR__ . '/reorder-handler.php';
 require_once __DIR__ . '/upload-handler.php';
 require_once __DIR__ . '/ticket-handler.php';
+require_once __DIR__ . '/ticket-workflow-handler.php';
 require_once __DIR__ . '/user-handler.php';
 require_once __DIR__ . '/smtp-handler.php';
 require_once __DIR__ . '/agent-handler.php';
@@ -78,6 +79,8 @@ function route_api_request($action) {
         'upload' => 'api_upload',
 
         // Ticket handlers
+        'ticket-workflow' => 'api_ticket_workflow',
+        'agent-ticket-workflow' => 'api_ticket_workflow',
         'change-status' => 'api_change_status',
         'quick-start' => 'api_quick_start',
         'start-timer' => 'api_start_timer',

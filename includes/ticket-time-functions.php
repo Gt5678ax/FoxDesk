@@ -463,6 +463,11 @@ function add_manual_time_entry($ticket_id, $user_id, $data) {
             'created_at' => date('Y-m-d H:i:s')
         ];
 
+        if (!empty($data['comment_id']) && column_exists('ticket_time_entries', 'comment_id')) {
+            $linked_comment = db_fetch_one('SELECT id FROM comments WHERE id = ? AND ticket_id = ?', [(int) $data['comment_id'], (int) $ticket_id]);
+            if (!$linked_comment) return false;
+            $insert['comment_id'] = (int) $linked_comment['id'];
+        }
         if (ticket_time_work_metadata_columns_exist()) {
             $worked_on = trim((string) ($data['worked_on'] ?? ''));
             if ($worked_on === '' && !empty($data['started_at'])) {

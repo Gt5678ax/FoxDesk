@@ -444,6 +444,7 @@
     }
 
     function initAutosave() {
+        if (document.querySelector('[data-workflow]')) return;
         if (!window.FoxDeskAutosave || !window.commentEditor || !ticketId) return;
         var draft = window.FoxDeskAutosave.create({
             key: 'foxdesk_draft_comment_' + ticketId,

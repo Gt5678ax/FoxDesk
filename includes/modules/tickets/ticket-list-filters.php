@@ -98,6 +98,7 @@ function ticket_list_filter_state_from_request(array $request, array $cookies = 
     $view_state = ticket_list_visual_view_from_request($request, $cookies);
     $filters = [];
 
+    if (($request['assignment'] ?? '') === 'unassigned') $filters['assignee_unassigned'] = true;
     if (!empty($assigned_to)) {
         $filters['assigned_to'] = $assigned_to;
     }

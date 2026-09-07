@@ -581,6 +581,7 @@ function api_token_required_scope_for_action(string $action): ?string
         'agent-plan-work-log' => 'tickets:read',
         'agent-apply-work-log-plan' => 'tickets:write',
         'agent-update-status' => 'tickets:write',
+        'agent-ticket-workflow' => 'tickets:write',
         'agent-log-time' => 'time:write',
         'agent-delete-ticket-preflight' => 'tickets:read',
         'agent-delete-ticket-permanently' => 'delete:write',

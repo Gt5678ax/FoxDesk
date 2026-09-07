@@ -1,13 +1,13 @@
 {
-    "version": "0.3.145",
+    "version": "0.3.146",
     "date": "2026-09-07",
     "min_php": "8.1",
     "changelog": [
-        "Prevent translated ticket column headings from overlapping neighboring columns",
-        "Redesigned workspace with Work, Tickets, Time, Reports and Clients navigation",
-        "Compact ticket lists with readable subjects and collapsible mobile filters",
-        "Consistent page headings, client reports and settings navigation",
-        "Removed default promotional copy while preserving custom workspace text and self-hosted controls"
+        "Complete and reopen tickets directly from their detail, with status undo and queue navigation",
+        "Claim and hand off tickets with optional internal notes",
+        "Save replies, time and status together; preserve unsent drafts and show recipients",
+        "Add revision-checked, idempotent workflow actions for API and MCP agents",
+        "Improve compact ticket queues and localize workflow controls in all 24 languages"
     ],
     "delete_files": []
 }

@@ -121,6 +121,22 @@ require_once BASE_PATH . '/includes/components/ticket-form-handlers.php';
 $priority_name = $ticket['priority_name'] ?? get_priority_label($ticket['priority_id'] ?? 'medium');
 $priority_color = $ticket['priority_color'] ?? get_priority_color($ticket['priority_id'] ?? 'medium');
 
+$workflow_metadata = ticket_workflow_metadata($ticket, $user);
+$workflow_metadata['user_id'] = (int) $user['id'];
+$workflow_metadata['tenant_id'] = (int) ($user['tenant_id'] ?? 0);
+$workflow_metadata['draft_ack'] = (string) ($_SESSION['ticket_workflow_ack'][$ticket_id] ?? '');
+$workflow_metadata['recipient_emails'] = [];
+$workflow_metadata['email_enabled'] = false;
+if (is_agent()) {
+    require_once BASE_PATH . '/includes/mailer.php';
+    $workflow_metadata['email_enabled'] = (get_settings()['notify_on_new_comment'] ?? '') === '1';
+    foreach (ticket_comment_notification_recipients($ticket, $user) as $recipient_id => $recipient_meta) {
+        $recipient = get_user((int) $recipient_id);
+        if (!empty($recipient['email'])) $workflow_metadata['recipient_emails'][] = $recipient['email'];
+    }
+}
+$workflow_metadata['copy'] = ['stop_timer' => t('Stop timer'), 'assign' => t('Assign'), 'cancel' => t('Cancel'), 'internal_note' => t('Internal note')];
+foreach (['reopen', 'claim', 'send', 'send_done', 'send_waiting', 'save_note', 'more', 'add_time', 'exact_time', 'next', 'previous', 'complete_next', 'conflict', 'save_failed', 'saved', 'undo_status', 'draft_restored', 'attachments_reselect', 'saving', 'triage', 'recipients', 'keyboard', 'draft_saved', 'reload'] as $key) $workflow_metadata['copy'][$key] = t('workflow.' . $key);
 require_once BASE_PATH . '/includes/header.php';
 ?>
 

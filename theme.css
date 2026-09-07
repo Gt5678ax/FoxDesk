@@ -5087,7 +5087,7 @@ cursor: pointer;
 table-layout: fixed;
 }
 .tickets-col-date {
-width: 80px;
+width: 96px;
 }
 .ticket-date-sort {
 align-items: center;
@@ -16410,3 +16410,44 @@ display: none;
 [data-theme="dark"] .app-shell-page .badge-inline {
   color: var(--text-primary) !important;
 }
+
+/* Ticket workflow: compact status, progressive disclosure and queue navigation. */
+.ticket-status-form{display:inline-flex;align-items:center;gap:.375rem;max-inline-size:100%}
+.ticket-header-status{max-inline-size:13rem;min-block-size:36px;font-weight:600;padding-block:.25rem}
+.workflow-disclosure{border:1px solid var(--border-light);border-radius:var(--fd-radius-control);margin-block:.75rem;padding:.625rem .75rem}
+.workflow-disclosure>summary{cursor:pointer;font-weight:600;min-block-size:28px;align-content:center}
+.workflow-disclosure[open]>summary{margin-block-end:.625rem}
+.workflow-disclosure>input,.workflow-disclosure>select{max-inline-size:100%}
+.workflow-disclosure .ticket-composer-manual-header{display:none}
+.workflow-disclosure .ticket-composer-manual-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.workflow-disclosure .ticket-composer-manual-entry{border:0;padding:0;margin:0}
+.workflow-queue{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-block-start:.75rem;padding-block-start:.75rem;border-block-start:1px solid var(--border-light);grid-column:1/-1}
+.workflow-shortcuts{font-size:.75rem;color:var(--text-muted);margin-inline-start:auto}
+.workflow-feedback{font-size:.875rem;overflow-wrap:anywhere}
+.workflow-feedback:empty{display:none}
+.workflow-feedback--error{color:var(--danger,#b91c1c);padding:.75rem;border:1px solid currentColor;border-radius:var(--fd-radius-control)}
+.workflow-outcome{max-inline-size:20rem;min-inline-size:0}
+.ticket-composer-submit-row{align-items:center}
+[data-workflow] [hidden]{display:none!important}
+[data-workflow] .ticket-composer-tool-grid:empty{display:none}
+[data-workflow] .ticket-composer-tool-grid{grid-template-columns:minmax(0,1fr)}
+@media(max-width:767px){
+ .workflow-outcome{inline-size:100%;max-inline-size:none}
+ .ticket-composer-submit-right{flex-wrap:wrap;inline-size:100%}
+ .workflow-shortcuts{display:none}
+ [data-workflow] .ticket-composer-icon-button,[data-workflow] .ticket-timeline-action,[data-workflow] button[title]{min-block-size:44px;min-inline-size:44px}
+ .ticket-header-status{min-block-size:44px;max-inline-size:11rem}
+ .workflow-queue .btn{min-block-size:44px}
+}
+
+[data-workflow] .hidden{display:none!important}
+
+.workflow-recipients {font-size: .8125rem; color: var(--text-muted); overflow-wrap: anywhere; margin-block: .5rem;}
+
+.workflow-assignment-views {display:flex; flex-wrap:wrap; gap:.5rem; margin-block:0 .75rem;}
+@media (min-width:1600px) {.ticket-registry-page {max-inline-size:1440px;}}
+
+.workflow-handoff {inline-size:min(30rem,calc(100vw - 2rem)); border:1px solid var(--border-color); border-radius:12px; padding:1.25rem; background:var(--bg-primary); color:var(--text-primary);}
+.workflow-handoff::backdrop {background:rgb(11 22 51 / .4);}
+.workflow-handoff label {display:block; margin-block:1rem .5rem;}
+.workflow-handoff .workflow-assignment-views {margin-block:1rem 0; justify-content:flex-end;}

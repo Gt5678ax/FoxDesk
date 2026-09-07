@@ -21,6 +21,7 @@ async function call(id, method, params = {}) {
     'foxdesk_agent_docs',
     'foxdesk_list_tickets',
     'foxdesk_get_ticket',
+    'foxdesk_complete_ticket', 'foxdesk_reopen_ticket', 'foxdesk_claim_ticket', 'foxdesk_assign_ticket',
     'foxdesk_create_ticket',
     'foxdesk_add_comment',
     'foxdesk_add_work_entry',

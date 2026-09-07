@@ -129,7 +129,7 @@ function ticket_detail_primary_actions(array $ticket, array $user, array $status
         ],
     ];
 
-    if ($is_agent_user && $time_available) {
+    if ($is_agent_user && $time_available && (!$is_done || $has_active_timer)) {
         $timer_title = 'Start a timer for this ticket.';
         if ($timer_state === 'running') {
             $timer_title = 'Pause this timer without logging time yet.';
@@ -139,7 +139,7 @@ function ticket_detail_primary_actions(array $ticket, array $user, array $status
 
         $actions[] = [
             'key' => 'start_work',
-            'label' => $timer_state === 'running' ? 'Pause work' : ($timer_state === 'paused' ? 'Resume work' : 'Start work'),
+            'label' => $timer_state === 'running' ? 'Pause timer' : ($timer_state === 'paused' ? 'Resume timer' : 'Start timer'),
             'icon' => $timer_state === 'running' ? 'pause' : 'play',
             'style' => $timer_state === 'running' ? 'warning' : 'secondary',
             'type' => 'button',
@@ -177,6 +177,15 @@ function ticket_detail_primary_actions(array $ticket, array $user, array $status
             'title' => $complete_title,
             'visible' => true,
         ];
+    }
+
+    if ($is_agent_user && $can_edit && empty($ticket['is_archived'])) {
+        if ((int) ($ticket['assignee_id'] ?? 0) !== (int) ($user['id'] ?? 0)) {
+            $actions[] = ['key' => 'claim', 'label' => 'workflow.claim', 'title' => 'workflow.claim', 'icon' => 'user-plus', 'style' => 'secondary', 'type' => 'button', 'visible' => true];
+        }
+        if ($is_done && function_exists('ticket_workflow_target') && ticket_workflow_target($statuses, 'active')) {
+            $actions[] = ['key' => 'reopen', 'label' => 'workflow.reopen', 'title' => 'workflow.reopen', 'icon' => 'undo', 'style' => 'primary', 'type' => 'button', 'visible' => true];
+        }
     }
 
     if ($can_edit) {

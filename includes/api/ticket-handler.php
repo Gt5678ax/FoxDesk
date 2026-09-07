@@ -194,6 +194,8 @@ function api_start_timer() {
         api_error('Forbidden', 403);
     }
 
+    if (ticket_detail_is_done($ticket) || !empty($ticket['is_archived'])) api_error(t('workflow.reopen'), 409);
+
     if (!ticket_time_table_exists()) {
         api_error(t('Time tracking is not available.'), 400);
     }

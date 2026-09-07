@@ -50,3 +50,5 @@ require_once __DIR__ . '/app/dashboard-compat.php';
 require_once __DIR__ . '/app/app-contract.php';
 require_once __DIR__ . '/app/app-shell.php';
 require_once __DIR__ . '/app/app-feed.php';
+
+require_once __DIR__ . '/tickets/ticket-workflow.php';

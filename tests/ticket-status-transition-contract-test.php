@@ -27,6 +27,6 @@ $assert(substr_count($web, 'ticket_transition_status(') >= 2, 'Both web status-c
 $assert(str_contains($api, 'ticket_transition_status('), 'The browser API status path must use the shared helper.');
 $assert(str_contains($agent, 'ticket_transition_status('), 'The agent API status path must use the shared helper.');
 $assert(str_contains($api, "'timer_stopped' => !empty(\$transition['timer_stopped'])"), 'Browser API must report timer stop state.');
-$assert(str_contains($agent, "'timer_stopped' => !empty(\$transition['timer_stopped'])"), 'Agent API must report timer stop state.');
+$assert(str_contains($agent, "'timer_stopped'") && str_contains($agent, 'ticket_workflow_apply('), 'Agent API must report timer stop state.');
 
 echo "Ticket status transition contract passed.\n";

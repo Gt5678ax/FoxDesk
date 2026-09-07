@@ -237,6 +237,7 @@ function app_contract_ticket_actions(array $ticket, array $user): array
     }
 
     return [
+        'workflow' => ticket_workflow_metadata($ticket, $user),
         'primary' => $actions,
         'statuses' => $status_options,
         'timer' => $timer,

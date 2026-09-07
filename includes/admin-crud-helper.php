@@ -283,7 +283,7 @@ function api_success($data = []) {
     exit;
 }
 
-function api_error($message, $code = 400) {
+function api_error($message, $code = 400, array $details = []) {
     http_response_code($code);
     if (!empty($GLOBALS['is_api_token_auth']) && function_exists('api_idempotency_release_pending')) {
         api_idempotency_release_pending();
@@ -293,7 +293,7 @@ function api_error($message, $code = 400) {
     }
     header('Content-Type: application/json; charset=UTF-8');
     try {
-        echo json_encode(['error' => $message, 'success' => false], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        echo json_encode(array_merge($details, ['error' => $message, 'success' => false]), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
     } catch (JsonException $e) {
         echo '{"success":false,"error":"Request failed"}';
     }

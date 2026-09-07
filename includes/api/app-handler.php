@@ -653,6 +653,7 @@ function api_app_ticket_timer_action()
     $result = ['success' => false];
 
     if ($action === 'start') {
+        if (ticket_detail_is_done($ticket) || !empty($ticket['is_archived'])) api_error(t('workflow.reopen'), 409);
         $active = get_active_ticket_timer($ticket_id, (int) $user['id']);
         if ($active) {
             api_error('Timer is already running.', 400);

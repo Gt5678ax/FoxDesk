@@ -5,6 +5,7 @@
 ?>
 <div class="workflow-surface workflow-surface--ticket-detail ticket-detail-page"
     data-core-workflow-surface="ticket-detail"
+    data-workflow="<?php echo e(json_encode($workflow_metadata)); ?>"
     data-ticket-detail-surface
     data-ticket-id="<?php echo (int) $ticket_id; ?>">
     <!-- Main Content -->
@@ -23,12 +24,24 @@
                 }
                 ?>
                 <div class="ticket-work-panel__meta">
-                    <a href="<?php echo $back_url; ?>" class="inline-flex items-center gap-1 hover:underline text-theme-muted">
+                    <a href="<?php echo $back_url; ?>" class="ticket-back-link inline-flex items-center gap-1 hover:underline text-theme-muted">
                         <?php echo get_icon('arrow-left', 'w-3.5 h-3.5 back-link-icon'); ?>
-                        <?php echo e(t('Back')); ?>
+                        <?php echo e(t('workflow.back')); ?>
                     </a>
                     <span><?php echo get_ticket_code($ticket_id); ?></span>
-                    <?php ticket_detail_render_status_pill($ticket, $statuses); ?>
+                    <?php if (!empty($workflow_metadata['allowed_actions'])): ?>
+                        <form method="post" class="ticket-status-form" data-workflow-operation="status">
+                            <?php echo csrf_field(); ?>
+                            <input type="hidden" name="expected_revision" value="<?php echo e($workflow_metadata['revision']); ?>">
+                            <label class="sr-only" for="ticket-header-status"><?php echo e(t('Status')); ?></label>
+                            <select id="ticket-header-status" name="status_id" class="form-select ticket-header-status">
+                                <?php foreach ($statuses as $status): ?>
+                                <option value="<?php echo (int) $status['id']; ?>" <?php echo (int) $status['id'] === (int) $ticket['status_id'] ? 'selected' : ''; ?>><?php echo e(t($status['name'])); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <button type="submit" name="change_status" class="btn btn-secondary workflow-no-js"><?php echo e(t('Save')); ?></button>
+                        </form>
+                    <?php else: ticket_detail_render_status_pill($ticket, $statuses); endif; ?>
                     <?php if (!empty($ticket['is_archived'])): ?>
                         <span class="px-1.5 py-0.5 fd-rounded-pill text-[11px] font-medium bg-theme-tertiary text-theme-secondary"><?php echo e(t('Archived')); ?></span>
                     <?php endif; ?>
@@ -49,7 +62,7 @@
                             <span><?php echo e(t($action['label'])); ?></span>
                         </a>
                     <?php elseif ($action['type'] === 'submit'): ?>
-                        <form method="post" class="ticket-primary-action-form">
+                        <form method="post" class="ticket-primary-action-form" data-workflow-operation="<?php echo e($action['key']); ?>">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="status_id" value="<?php echo (int) $action['status_id']; ?>">
                             <button type="submit" name="<?php echo e($action['name']); ?>" class="<?php echo e($action_class); ?>"
@@ -59,7 +72,7 @@
                             </button>
                         </form>
                     <?php else: ?>
-                        <button type="button"
+                        <button type="button" data-workflow-operation="<?php echo e($action['key']); ?>"
                             <?php if (!empty($action['id'])): ?>id="<?php echo e($action['id']); ?>"<?php endif; ?>
                             <?php if (!empty($action['onclick'])): ?>onclick="<?php echo e($action['onclick']); ?>"<?php endif; ?>
                             <?php if (($action['key'] ?? '') === 'edit'): ?>data-ticket-edit-open<?php endif; ?>
@@ -203,7 +216,7 @@
         <!-- Comments & Time Log Combined -->
         <div class="card">
             <div class="card-header">
-                <h3 class="font-semibold text-theme-primary"><?php echo e(t('Activity')); ?>
+                <h3 class="font-semibold text-theme-primary"><?php echo e(t('workflow.activity')); ?>
                     (<?php echo e(tn('comment.count', count($comments))); ?>)</h3>
                 <?php if ($time_tracking_available && $total_time_minutes > 0 && can_view_time($user)): ?>
                         <span

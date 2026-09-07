@@ -33,21 +33,27 @@
       "name": "foxdesk_list_tickets",
       "action": "agent-list-tickets",
       "method": "GET",
-      "scopes": ["tickets:read"],
+      "scopes": [
+        "tickets:read"
+      ],
       "writes": false
     },
     {
       "name": "foxdesk_get_ticket",
       "action": "agent-get-ticket",
       "method": "GET",
-      "scopes": ["tickets:read"],
+      "scopes": [
+        "tickets:read"
+      ],
       "writes": false
     },
     {
       "name": "foxdesk_create_ticket",
       "action": "agent-create-ticket",
       "method": "POST",
-      "scopes": ["tickets:write"],
+      "scopes": [
+        "tickets:write"
+      ],
       "writes": true,
       "supports_dry_run": true,
       "requires_confirmation": true
@@ -56,7 +62,10 @@
       "name": "foxdesk_add_comment",
       "action": "agent-add-update",
       "method": "POST",
-      "scopes": ["tickets:read", "comments:write"],
+      "scopes": [
+        "tickets:read",
+        "comments:write"
+      ],
       "writes": true,
       "supports_dry_run": true,
       "requires_confirmation": true
@@ -65,7 +74,11 @@
       "name": "foxdesk_add_work_entry",
       "action": "agent-add-work-entry",
       "method": "POST",
-      "scopes": ["tickets:read", "comments:write", "time:write"],
+      "scopes": [
+        "tickets:read",
+        "comments:write",
+        "time:write"
+      ],
       "writes": true,
       "supports_dry_run": true,
       "requires_confirmation": true
@@ -74,7 +87,12 @@
       "name": "foxdesk_plan_work_log",
       "action": "agent-plan-work-log",
       "method": "POST",
-      "scopes": ["tickets:read", "tickets:write", "comments:write", "time:write"],
+      "scopes": [
+        "tickets:read",
+        "tickets:write",
+        "comments:write",
+        "time:write"
+      ],
       "writes": false,
       "supports_dry_run": false,
       "requires_confirmation": false
@@ -83,7 +101,12 @@
       "name": "foxdesk_apply_work_log_plan",
       "action": "agent-apply-work-log-plan",
       "method": "POST",
-      "scopes": ["tickets:read", "tickets:write", "comments:write", "time:write"],
+      "scopes": [
+        "tickets:read",
+        "tickets:write",
+        "comments:write",
+        "time:write"
+      ],
       "writes": true,
       "supports_dry_run": false,
       "requires_confirmation": true
@@ -92,7 +115,9 @@
       "name": "foxdesk_log_time",
       "action": "agent-log-time",
       "method": "POST",
-      "scopes": ["time:write"],
+      "scopes": [
+        "time:write"
+      ],
       "writes": true,
       "supports_dry_run": true,
       "requires_confirmation": true
@@ -101,8 +126,70 @@
       "name": "foxdesk_prepare_report",
       "action": "app-reporting-review",
       "method": "GET",
-      "scopes": ["reports:read"],
+      "scopes": [
+        "reports:read"
+      ],
       "writes": false
+    },
+    {
+      "name": "foxdesk_change_status",
+      "action": "agent-ticket-workflow",
+      "method": "POST",
+      "required_scopes": [
+        "tickets:read",
+        "tickets:write"
+      ],
+      "write": true,
+      "requires_confirmation": true,
+      "supports_dry_run": true
+    },
+    {
+      "name": "foxdesk_complete_ticket",
+      "action": "agent-ticket-workflow",
+      "method": "POST",
+      "required_scopes": [
+        "tickets:read",
+        "tickets:write"
+      ],
+      "write": true,
+      "requires_confirmation": true,
+      "supports_dry_run": true
+    },
+    {
+      "name": "foxdesk_reopen_ticket",
+      "action": "agent-ticket-workflow",
+      "method": "POST",
+      "required_scopes": [
+        "tickets:read",
+        "tickets:write"
+      ],
+      "write": true,
+      "requires_confirmation": true,
+      "supports_dry_run": true
+    },
+    {
+      "name": "foxdesk_claim_ticket",
+      "action": "agent-ticket-workflow",
+      "method": "POST",
+      "required_scopes": [
+        "tickets:read",
+        "tickets:write"
+      ],
+      "write": true,
+      "requires_confirmation": true,
+      "supports_dry_run": true
+    },
+    {
+      "name": "foxdesk_assign_ticket",
+      "action": "agent-ticket-workflow",
+      "method": "POST",
+      "required_scopes": [
+        "tickets:read",
+        "tickets:write"
+      ],
+      "write": true,
+      "requires_confirmation": true,
+      "supports_dry_run": true
     }
   ]
 }

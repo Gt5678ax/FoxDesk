@@ -238,7 +238,7 @@
                                                 <?php if ($u['id'] !== $user['id'] && $u['id'] !== $ticket['user_id']): ?>
                                                         <label class="flex items-center px-3 py-2 cursor-pointer tr-hover">
                                                             <input type="checkbox" name="cc_users[]" value="<?php echo $u['id']; ?>"
-                                                                class="agent-cc-checkbox rounded text-blue-600 mr-2">
+                                                                data-email="<?php echo e($u['email'] ?? ''); ?>" class="agent-cc-checkbox rounded text-blue-600 mr-2">
                                                             <span
                                                                 class="text-sm truncate"><?php echo e($u['first_name'] . ' ' . $u['last_name']); ?></span>
                                                         </label>

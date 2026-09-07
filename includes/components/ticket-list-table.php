@@ -7,7 +7,7 @@
 
         <!-- Mobile Filter Bar -->
         <details class="ticket-mobile-filters">
-            <summary><?php echo get_icon('filter', 'w-4 h-4'); ?> <?php echo e(t('Filters')); ?></summary>
+            <summary><?php echo get_icon('filter', 'w-4 h-4'); ?> <?php echo e(t('workflow.filters')); ?></summary>
             <form method="get" action="index.php" class="ticket-mobile-filter-form">
                 <input type="hidden" name="page" value="tickets">
                 <input type="hidden" name="search_scope" value="all">
@@ -278,12 +278,12 @@
                         <th scope="col" class="tickets-col-subject"><?php echo e(t('Subject')); ?></th>
                         <th scope="col" class="tickets-col-status"><?php echo e(t('Status')); ?></th>
                         <th scope="col" class="tickets-col-priority"><?php echo e(t('Priority')); ?></th>
-                        <th scope="col" class="tickets-col-due"><?php echo e(t('Due date')); ?></th>
+                        <th scope="col" class="tickets-col-due" title="<?php echo e(t('Due date')); ?>"><?php echo e(t('Due')); ?></th>
                         <?php if (is_admin()): ?>
                             <th scope="col" class="tickets-col-company"><?php echo e(t('Company')); ?></th>
                         <?php endif; ?>
                         <?php if (is_admin() || is_agent()): ?>
-                            <th scope="col" class="tickets-col-user"><?php echo e(t('Assigned to')); ?></th>
+                            <th scope="col" class="tickets-col-user"><?php echo e(t('workflow.assigned')); ?></th>
                             <th scope="col" class="tickets-col-time"><?php echo e(t('Time')); ?></th>
                         <?php endif; ?>
                     </tr>

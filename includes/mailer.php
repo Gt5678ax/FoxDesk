@@ -492,6 +492,48 @@ function send_status_change_notification($ticket, $old_status, $new_status, $com
 /**
  * Send new comment notification with comment text, time, attachments, and direct link
  */
+function ticket_comment_notification_recipients($ticket, $commenter, $cc_user_ids = [])
+{
+    $recipients = [];
+
+    // Ticket owner (creator)
+    if ($commenter['id'] != $ticket['user_id']) {
+        $recipients[$ticket['user_id']] = ['type' => 'owner'];
+    }
+
+    // Assigned agent
+    if (!empty($ticket['assignee_id']) && $ticket['assignee_id'] != $commenter['id']) {
+        if (!isset($recipients[$ticket['assignee_id']])) {
+            $recipients[(int)$ticket['assignee_id']] = ['type' => 'assignee'];
+        }
+    }
+
+    // Previous commenters (participants) — notify everyone who commented on this ticket
+    try {
+        $participants = get_ticket_comment_user_ids((int) $ticket['id'], (int) $commenter['id']);
+        foreach ($participants as $pid) {
+            $pid = (int) $pid;
+            if ($pid > 0 && !isset($recipients[$pid])) {
+                $recipients[$pid] = ['type' => 'participant'];
+            }
+        }
+    } catch (Exception $e) {
+        // ignore — participants are optional
+    }
+
+    // CC users
+    foreach ($cc_user_ids as $cc_id) {
+        $cc_id = (int) $cc_id;
+        if ($cc_id > 0 && $cc_id != $commenter['id']) {
+            if (!isset($recipients[$cc_id])) {
+                $recipients[$cc_id] = ['type' => 'cc'];
+            }
+        }
+    }
+
+    return $recipients;
+}
+
 function send_new_comment_notification($ticket, $comment, $commenter, $comment_id = null, $attachments = [], $cc_user_ids = [])
 {
     $settings = get_settings();
@@ -539,42 +581,7 @@ function send_new_comment_notification($ticket, $comment, $commenter, $comment_i
         $attachments_text = implode(', ', $attachment_names);
     }
 
-    $recipients = [];
-
-    // Ticket owner (creator)
-    if ($commenter['id'] != $ticket['user_id']) {
-        $recipients[$ticket['user_id']] = ['type' => 'owner'];
-    }
-
-    // Assigned agent
-    if (!empty($ticket['assignee_id']) && $ticket['assignee_id'] != $commenter['id']) {
-        if (!isset($recipients[$ticket['assignee_id']])) {
-            $recipients[(int)$ticket['assignee_id']] = ['type' => 'assignee'];
-        }
-    }
-
-    // Previous commenters (participants) — notify everyone who commented on this ticket
-    try {
-        $participants = get_ticket_comment_user_ids((int) $ticket['id'], (int) $commenter['id']);
-        foreach ($participants as $pid) {
-            $pid = (int) $pid;
-            if ($pid > 0 && !isset($recipients[$pid])) {
-                $recipients[$pid] = ['type' => 'participant'];
-            }
-        }
-    } catch (Exception $e) {
-        // ignore — participants are optional
-    }
-
-    // CC users
-    foreach ($cc_user_ids as $cc_id) {
-        $cc_id = (int) $cc_id;
-        if ($cc_id > 0 && $cc_id != $commenter['id']) {
-            if (!isset($recipients[$cc_id])) {
-                $recipients[$cc_id] = ['type' => 'cc'];
-            }
-        }
-    }
+    $recipients = ticket_comment_notification_recipients($ticket, $commenter, $cc_user_ids);
 
     $any_sent = false;
     $all_ok = true;

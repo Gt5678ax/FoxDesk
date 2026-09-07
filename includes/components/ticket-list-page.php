@@ -32,6 +32,19 @@ $kanban_archived_closed_statuses = $ticket_kanban_model['archived_closed_statuse
         ?>
     </div>
 
+<?php if (is_agent() && !$is_archive): ?>
+    <nav class="workflow-assignment-views" aria-label="<?php echo e(t('workflow.assigned')); ?>">
+        <?php
+        $assignment_query = $_GET;
+        unset($assignment_query['assigned_to'], $assignment_query['assignment'], $assignment_query['p']);
+        foreach ([['workflow.mine', ['assigned_to' => (int) $user['id']]], ['workflow.unassigned', ['assignment' => 'unassigned']]] as [$assignment_label, $assignment_filter]):
+            $assignment_active = isset($assignment_filter['assigned_to']) ? (int) ($assigned_to ?? 0) === (int) $user['id'] : ($_GET['assignment'] ?? '') === 'unassigned';
+            $assignment_url = 'index.php?' . http_build_query(array_merge($assignment_query, $assignment_active ? [] : $assignment_filter));
+        ?>
+        <a class="btn btn-sm <?php echo $assignment_active ? 'btn-primary' : 'btn-secondary'; ?>" href="<?php echo e($assignment_url); ?>" <?php if ($assignment_active) echo 'aria-current="page"'; ?>><?php echo e(t($assignment_label)); ?></a>
+        <?php endforeach; ?>
+    </nav>
+<?php endif; ?>
 <div class="card ticket-registry-card overflow-hidden <?php echo $ticket_view === 'board' ? 'kanban-board-wrapper' : ''; ?>">
     <?php if (empty($tickets)): ?>
         <?php

@@ -164,6 +164,11 @@ function api_agent_enforce_structured_temporal_text(array $input, array $fields)
 function api_agent_docs_tools(): array
 {
     return [
+        ['action' => 'agent-ticket-workflow', 'method' => 'POST', 'scope' => 'tickets:write',
+         'writes' => true, 'query' => [],
+         'body' => ['ticket_id' => 'integer, or ticket_hash', 'operation' => 'status|complete|reopen|claim|assign', 'expected_revision' => 'required string from ticket.workflow.revision', 'status_id' => 'integer for status', 'assignee_id' => 'integer for assign', 'handoff_note' => 'optional internal note saved with assignment', 'skip_notification' => 'optional boolean'],
+         'description' => 'Apply status, complete, reopen, claim or assign using expected_revision from agent-get-ticket ticket.workflow. Requires tickets:read and tickets:write; stopping a timer also requires time:write. Returns refreshed actions, revision, timer and notification outcomes.'],
+
         ['action' => 'agent-docs', 'method' => 'GET', 'scopes' => [], 'description' => 'Read the live API contract and canonical operating instructions.'],
         ['action' => 'agent-me', 'method' => 'GET', 'scopes' => ['work:read'], 'description' => 'Verify the API-token identity.'],
         ['action' => 'agent-list-statuses', 'method' => 'GET', 'scopes' => ['tickets:read'], 'description' => 'List valid ticket statuses.'],
@@ -688,6 +693,7 @@ function api_agent_get_ticket()
             'description' => $ticket['description'] ?? '',
             'type' => $ticket['type'] ?? 'general',
             'status' => $ticket['status_name'] ?? null,
+        'workflow' => ticket_workflow_metadata($ticket, $user),
             'status_id' => (int) ($ticket['status_id'] ?? 0),
             'status_color' => $ticket['status_color'] ?? null,
             'priority' => $ticket['priority_name'] ?? null,
@@ -769,6 +775,12 @@ function api_agent_add_comment()
     $is_internal = !empty($input['is_internal']) ? 1 : 0;
 
     $duration = (int) ($input['duration_minutes'] ?? 0);
+    $workflow_status = !empty($input['status_id']) ? get_status((int) $input['status_id']) : null;
+    if (isset($input['status_id']) && (!$workflow_status || !can_edit_ticket($ticket, $user)
+        || (!empty($GLOBALS['is_api_token_auth']) && !api_token_has_scope('tickets:write')))) api_error('Status change is not permitted', 403);
+    if ($workflow_status && empty($input['expected_revision'])) api_error(t('workflow.conflict'), 409);
+    $workflow_before = $ticket;
+    $workflow_transition = [];
     $comment_id = null;
     $time_entry_id = null;
     $db = get_db();
@@ -778,6 +790,12 @@ function api_agent_add_comment()
             $db->beginTransaction();
             $started_transaction = true;
         }
+        $ticket = ticket_workflow_lock($ticket, $user, (string) ($input['expected_revision'] ?? ''));
+        if ($workflow_status && ticket_status_group_from_status($workflow_status) === 'done' && get_active_ticket_timer($ticket_id, (int) $user['id'])) {
+            if ($duration > 0) throw new DomainException('Stop or discard the active timer before completing with a manual work entry.', 422);
+            if (!empty($GLOBALS['is_api_token_auth']) && !api_token_has_scope('time:write')) throw new DomainException('Missing required scope: time:write', 403);
+        }
+        if ($workflow_status) $workflow_transition = ticket_transition_status($ticket, get_status((int) $ticket['status_id']), $workflow_status, (int) $user['id']);
         $comment_id = add_comment($ticket_id, $user['id'], $input['content'], $is_internal);
         if (!$comment_id) {
             throw new RuntimeException('Failed to add comment');
@@ -840,6 +858,7 @@ function api_agent_add_comment()
         if ($started_transaction && $db->inTransaction()) {
             $db->rollBack();
         }
+        if ($e instanceof DomainException) ticket_workflow_api_error($ticket, $user, $e);
         api_error($duration > 0 ? 'Failed to add comment with time' : 'Failed to add comment', 500);
     }
 
@@ -853,15 +872,11 @@ function api_agent_add_comment()
         $response['ended_at'] = $precision === 'exact' ? $ended_at : null;
     }
 
-    // In-app notification for new comment (skip internal notes)
-    if (!$is_internal && empty($input['skip_notification']) && function_exists('dispatch_ticket_notifications')) {
-        $preview = mb_strlen($input['content']) > 80 ? mb_substr($input['content'], 0, 77) . '...' : $input['content'];
-        dispatch_ticket_notifications('new_comment', $ticket_id, $user['id'], [
-            'comment_preview' => strip_tags($preview),
-            'comment_id' => $comment_id,
-        ]);
-    }
-
+    $fresh = get_ticket($ticket_id);
+    $response['workflow'] = ticket_workflow_metadata($fresh, $user);
+    $response['timer_stopped'] = !empty($workflow_transition['timer_stopped']);
+    $response['notifications'] = ticket_workflow_notify($workflow_before, $fresh, $user, !empty($is_internal) && empty($input['skip_notification']));
+    if (!$is_internal) $response['notifications']['comment'] = ticket_workflow_comment_notify($fresh, ['content' => $input['content'], 'time_spent' => (int) $duration], $user, (int) $comment_id, [], [], empty($input['skip_notification']));
     api_success($response);
 }
 
@@ -871,62 +886,24 @@ function api_agent_add_comment()
 
 function api_agent_update_status()
 {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        api_error('Method not allowed', 405);
-    }
-    if (!is_agent()) {
-        api_error('Forbidden — agent or admin role required', 403);
-    }
-
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') api_error('Method not allowed', 405);
+    require_csrf_token(true);
     $input = get_json_input();
-
-    // Resolve status
-    $status_id = null;
-    if (!empty($input['status_id'])) {
-        $status_id = (int) $input['status_id'];
-    } elseif (!empty($input['status'])) {
-        $status_row = api_agent_reference_row_by_name('statuses', (string) $input['status']);
-        if ($status_row) {
-            $status_id = (int) $status_row['id'];
-        }
-    }
-
-    if (!$status_id) {
-        api_error('Provide "status_id" or "status" (name)', 422);
-    }
-
     $user = current_user();
+    if (!$user || !in_array($user['role'] ?? '', ['admin', 'agent'], true)) api_error('Forbidden', 403);
+    if (!empty($GLOBALS['is_api_token_auth']) && !api_token_has_scope('tickets:read')) api_error('Forbidden', 403);
     $ticket = api_agent_resolve_ticket($input, $user, 'ticket_hash', 'ticket_id');
-    $ticket_id = (int) $ticket['id'];
-
-    // Verify status exists
-    $status = api_agent_status_by_id((int) $status_id);
-    if (!$status) {
-        api_error('Status not found', 404);
+    $status = !empty($input['status_id']) ? get_status((int) $input['status_id']) : api_agent_reference_row_by_name('statuses', (string) ($input['status'] ?? ''));
+    if (!$status) api_error('Status not found', 422);
+    try {
+        $result = ticket_workflow_apply($ticket, $user, array_merge($input, [
+            'operation' => 'status', 'status_id' => (int) $status['id'],
+            'expected_revision' => $input['expected_revision'] ?? ticket_workflow_revision((int) $ticket['id']),
+        ]));
+    } catch (DomainException $error) {
+        api_error($error->getMessage(), (int) $error->getCode() ?: 422);
     }
-
-    $old_status_row = api_agent_status_by_id((int) $ticket['status_id']) ?: [];
-    $transition = ticket_transition_status(
-        $ticket,
-        $old_status_row,
-        $status,
-        (int) $user['id']
-    );
-
-    // In-app notification for status change
-    if (function_exists('dispatch_ticket_notifications')) {
-        dispatch_ticket_notifications('status_changed', $ticket_id, $user['id'], [
-            'old_status' => $old_status_row['name'] ?? '',
-            'new_status' => $status['name'] ?? '',
-        ]);
-    }
-
-    api_success([
-        'ticket_id' => (int) $ticket_id,
-        'status_id' => $status_id,
-        'status' => $status['name'],
-        'timer_stopped' => !empty($transition['timer_stopped']),
-    ]);
+    api_success(array_merge($result, ['ticket_id' => (int) $ticket['id'], 'status_id' => (int) $status['id'], 'status' => $status['name']]));
 }
 
 // =============================================================================

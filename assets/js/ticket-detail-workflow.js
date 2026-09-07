@@ -210,6 +210,7 @@
     }
 
     function initSubmitLabel() {
+        if (document.querySelector('[data-workflow]')) return;
         var submit = document.getElementById('comment-submit-btn');
         window.updateSubmitLabel = function () {
             if (!submit) return;
@@ -271,8 +272,6 @@
 
         buttons.forEach(function (button) {
             button.addEventListener('click', function () {
-                if (window.commentEditor) window.commentEditor.setText('');
-                if (window.internalEditor) window.internalEditor.setText('');
                 setMode(button.dataset.mode);
             });
         });

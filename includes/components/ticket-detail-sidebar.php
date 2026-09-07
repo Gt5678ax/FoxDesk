@@ -58,7 +58,7 @@ if (is_agent()) {
 
             <?php if (is_agent()): ?>
                 <div class="ticket-side-row">
-                    <dt class="ticket-side-label"><?php echo e(t('Assigned')); ?></dt>
+                    <dt class="ticket-side-label"><?php echo e(t('workflow.assigned')); ?></dt>
                     <dd class="ticket-side-value ticket-side-value--control">
                         <select class="ticket-side-control ticket-side-select" onchange="quickEditField('quick-assign', {assignee_id: this.value})">
                             <option value=""><?php echo e(t('-- Unassigned --')); ?></option>
@@ -215,7 +215,7 @@ if (is_agent()) {
             <summary class="ticket-side-section__summary">
                 <span class="ticket-side-section__title">
                     <?php echo get_icon('history', 'w-4 h-4'); ?>
-                    <?php echo e(t('Activity')); ?>
+                    <?php echo e(t('workflow.activity')); ?>
                 </span>
                 <span class="ticket-side-section__meta"><?php echo e(t('Activity Timeline')); ?></span>
                 <?php echo get_icon('chevron-down', 'ticket-side-section__chevron'); ?>

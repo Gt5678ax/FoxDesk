@@ -43,6 +43,196 @@ function loadEnvFile(filePath) {
 loadEnvFile(process.env.FOXDESK_AGENT_ENV || DEFAULT_ENV_FILE);
 
 const TOOLS = [
+{
+  "name": "foxdesk_change_status",
+  "description": "Status a ticket using the current workflow revision. Read foxdesk_get_ticket first.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "ticket_id": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "ticket_hash": {
+        "type": "string"
+      },
+      "expected_revision": {
+        "type": "string"
+      },
+      "idempotency_key": {
+        "type": "string"
+      },
+      "skip_notification": {
+        "type": "boolean"
+      },
+      "dry_run": {
+        "type": "boolean"
+      },
+      "confirm": {
+        "type": "boolean"
+      },
+      "status_id": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "required": [
+      "expected_revision",
+      "idempotency_key",
+      "status_id"
+    ],
+    "additionalProperties": false
+  }
+},
+{
+  "name": "foxdesk_complete_ticket",
+  "description": "Complete a ticket using the current workflow revision. Read foxdesk_get_ticket first.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "ticket_id": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "ticket_hash": {
+        "type": "string"
+      },
+      "expected_revision": {
+        "type": "string"
+      },
+      "idempotency_key": {
+        "type": "string"
+      },
+      "skip_notification": {
+        "type": "boolean"
+      },
+      "dry_run": {
+        "type": "boolean"
+      },
+      "confirm": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "expected_revision",
+      "idempotency_key"
+    ],
+    "additionalProperties": false
+  }
+},
+{
+  "name": "foxdesk_reopen_ticket",
+  "description": "Reopen a ticket using the current workflow revision. Read foxdesk_get_ticket first.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "ticket_id": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "ticket_hash": {
+        "type": "string"
+      },
+      "expected_revision": {
+        "type": "string"
+      },
+      "idempotency_key": {
+        "type": "string"
+      },
+      "skip_notification": {
+        "type": "boolean"
+      },
+      "dry_run": {
+        "type": "boolean"
+      },
+      "confirm": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "expected_revision",
+      "idempotency_key"
+    ],
+    "additionalProperties": false
+  }
+},
+{
+  "name": "foxdesk_claim_ticket",
+  "description": "Claim a ticket using the current workflow revision. Read foxdesk_get_ticket first.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "ticket_id": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "ticket_hash": {
+        "type": "string"
+      },
+      "expected_revision": {
+        "type": "string"
+      },
+      "idempotency_key": {
+        "type": "string"
+      },
+      "skip_notification": {
+        "type": "boolean"
+      },
+      "dry_run": {
+        "type": "boolean"
+      },
+      "confirm": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "expected_revision",
+      "idempotency_key"
+    ],
+    "additionalProperties": false
+  }
+},
+{
+  "name": "foxdesk_assign_ticket",
+  "description": "Assign a ticket using the current workflow revision. Read foxdesk_get_ticket first.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "ticket_id": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "ticket_hash": {
+        "type": "string"
+      },
+      "expected_revision": {
+        "type": "string"
+      },
+      "idempotency_key": {
+        "type": "string"
+      },
+      "skip_notification": {
+        "type": "boolean"
+      },
+      "dry_run": {
+        "type": "boolean"
+      },
+      "confirm": {
+        "type": "boolean"
+      },
+      "assignee_id": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "required": [
+      "expected_revision",
+      "idempotency_key",
+      "assignee_id"
+    ],
+    "additionalProperties": false
+  }
+},
   {
     name: 'foxdesk_agent_manifest',
     description: 'Describe FoxDesk agent tools, required scopes, and safety rules.',
@@ -76,6 +266,7 @@ const TOOLS = [
         limit: { type: 'integer', minimum: 1, maximum: 100 },
         offset: { type: 'integer', minimum: 0 },
       },
+      "handoff_note": {"type": "string", "description": "Optional internal handoff note, saved atomically with assignment."},
       additionalProperties: false,
     },
   },
@@ -121,6 +312,8 @@ const TOOLS = [
       type: 'object',
       required: ['content'],
       properties: {
+        expected_revision: { type: 'string' },
+        status_id: { type: 'integer', minimum: 1 },
         ticket_id: { type: 'integer', minimum: 1 },
         ticket_hash: { type: 'string' },
         content: { type: 'string' },
@@ -141,6 +334,8 @@ const TOOLS = [
       type: 'object',
       required: ['content', 'duration_minutes'],
       properties: {
+        expected_revision: { type: 'string' },
+        status_id: { type: 'integer', minimum: 1 },
         ticket_id: { type: 'integer', minimum: 1 },
         ticket_hash: { type: 'string' },
         content: { type: 'string' },
@@ -383,6 +578,36 @@ const TOOL_HANDLERS = {
       ...(args.ticket_hash ? { hash: args.ticket_hash } : {}),
     });
   },
+  foxdesk_change_status: (args) => {
+    requireTicketSelector(args);
+    requireString(args.expected_revision, 'expected_revision');
+    requireString(args.idempotency_key, 'idempotency_key');
+    return apiWriteTool('foxdesk_change_status', 'agent-ticket-workflow', {...pickDefined(args, ['ticket_id','ticket_hash','status_id','assignee_id','handoff_note','expected_revision','skip_notification']), operation: 'status'}, args);
+  },
+  foxdesk_complete_ticket: (args) => {
+    requireTicketSelector(args);
+    requireString(args.expected_revision, 'expected_revision');
+    requireString(args.idempotency_key, 'idempotency_key');
+    return apiWriteTool('foxdesk_complete_ticket', 'agent-ticket-workflow', {...pickDefined(args, ['ticket_id','ticket_hash','status_id','assignee_id','handoff_note','expected_revision','skip_notification']), operation: 'complete'}, args);
+  },
+  foxdesk_reopen_ticket: (args) => {
+    requireTicketSelector(args);
+    requireString(args.expected_revision, 'expected_revision');
+    requireString(args.idempotency_key, 'idempotency_key');
+    return apiWriteTool('foxdesk_reopen_ticket', 'agent-ticket-workflow', {...pickDefined(args, ['ticket_id','ticket_hash','status_id','assignee_id','handoff_note','expected_revision','skip_notification']), operation: 'reopen'}, args);
+  },
+  foxdesk_claim_ticket: (args) => {
+    requireTicketSelector(args);
+    requireString(args.expected_revision, 'expected_revision');
+    requireString(args.idempotency_key, 'idempotency_key');
+    return apiWriteTool('foxdesk_claim_ticket', 'agent-ticket-workflow', {...pickDefined(args, ['ticket_id','ticket_hash','status_id','assignee_id','handoff_note','expected_revision','skip_notification']), operation: 'claim'}, args);
+  },
+  foxdesk_assign_ticket: (args) => {
+    requireTicketSelector(args);
+    requireString(args.expected_revision, 'expected_revision');
+    requireString(args.idempotency_key, 'idempotency_key');
+    return apiWriteTool('foxdesk_assign_ticket', 'agent-ticket-workflow', {...pickDefined(args, ['ticket_id','ticket_hash','status_id','assignee_id','handoff_note','expected_revision','skip_notification']), operation: 'assign'}, args);
+  },
   foxdesk_create_ticket: (args) => {
     requireString(args.title, 'title');
     return apiWriteTool('foxdesk_create_ticket', 'agent-create-ticket', pickDefined(args, [
@@ -401,6 +626,7 @@ const TOOL_HANDLERS = {
     requireString(args.content, 'content');
     return apiWriteTool('foxdesk_add_comment', 'agent-add-update', pickDefined(args, [
       'ticket_id',
+      'expected_revision', 'status_id',
       'ticket_hash',
       'content',
       'is_internal',
@@ -413,6 +639,7 @@ const TOOL_HANDLERS = {
     requireString(args.content, 'content');
     return apiWriteTool('foxdesk_add_work_entry', 'agent-add-work-entry', pickDefined(args, [
       'ticket_id',
+      'expected_revision', 'status_id',
       'ticket_hash',
       'content',
       'is_internal',
