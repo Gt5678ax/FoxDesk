@@ -1,8 +1,9 @@
 {
-    "version": "0.3.146",
+    "version": "0.3.147",
     "date": "2026-09-07",
     "min_php": "8.1",
     "changelog": [
+        "Keep next-ticket navigation within the selected queue and skip repeated activity links",
         "Complete and reopen tickets directly from their detail, with status undo and queue navigation",
         "Claim and hand off tickets with optional internal notes",
         "Save replies, time and status together; preserve unsent drafts and show recipients",

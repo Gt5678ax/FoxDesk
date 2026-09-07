@@ -5,7 +5,7 @@
     ready(function () {
         var script = document.getElementById('ticket-workflow-script');
         var scope = script ? script.dataset.scope : '';
-        var queueKey = 'foxdesk_queue_v2_' + scope;
+        var queueKey = 'foxdesk_queue_v3_' + scope;
         function load(store, key) { try { return JSON.parse(store.getItem(key) || 'null'); } catch (_) { return null; } }
         function save(store, key, value) { try { store.setItem(key, JSON.stringify(value)); return true; } catch (_) { return false; } }
         function remove(store, key) { try { store.removeItem(key); } catch (_) {} }
@@ -27,8 +27,13 @@
                 var link = event.target.closest('a[href]');
                 var url = link && safeUrl(link.href);
                 if (!url || url.searchParams.get('page') !== 'ticket') return;
-                var urls = Array.from(document.querySelectorAll('main a[href]')).filter(function (a) {
-                    var u = safeUrl(a.href); return a.getClientRects().length && u && u.searchParams.get('page') === 'ticket' && ticketKey(a.href);
+                var queueRoot = link.closest('[data-work-ticket-list], .work-activity-list, table') || link.closest('main');
+                if (!queueRoot) return;
+                var seenTickets = new Set();
+                var urls = Array.from(queueRoot.querySelectorAll('a[href]')).filter(function (a) {
+                    var u = safeUrl(a.href), key = ticketKey(a.href);
+                    if (!a.getClientRects().length || !u || u.searchParams.get('page') !== 'ticket' || !key || seenTickets.has(key)) return false;
+                    seenTickets.add(key); return true;
                 }).map(function (a) { return a.href; });
                 save(sessionStorage, queueKey, {url: location.href, scroll: window.scrollY, links: Array.from(new Set(urls)), restore: true});
             });
