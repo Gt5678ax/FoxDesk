@@ -21,8 +21,7 @@ include BASE_PATH . '/includes/components/page-header.php';
     <section class="reporting-flow-card" data-report-generation-card>
         <div class="reporting-flow-main">
             <div class="reporting-flow-heading">
-                <h2><?php echo e(t('Reports')); ?></h2>
-                <p><?php echo e(t('Time Reports')); ?></p>
+                <h1 class="page-header-title"><?php echo e(t('Reports')); ?></h1>
             </div>
             <form method="GET" action="index.php" class="reporting-flow-form" data-report-create-form>
                 <input type="hidden" name="page" value="admin">

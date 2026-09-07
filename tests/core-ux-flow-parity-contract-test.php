@@ -34,7 +34,7 @@ foreach ([
 
 $header = read_core_ux_flow_file($root, 'includes/header.php');
 foreach ([
-    "t('Dashboard')",
+    "t('Work')",
     "t('Tickets')",
     "t('New ticket')",
     "t('Reports')",
@@ -50,7 +50,7 @@ assert_core_ux_flow(str_contains($shortcuts, "label: labels.dashboard, desc: lab
 assert_core_ux_flow(!str_contains($shortcuts, "label: 'Work'"), 'Command palette must not expose the old Work label.');
 
 $footer = read_core_ux_flow_file($root, 'includes/footer.php');
-assert_core_ux_flow(str_contains($footer, "'dashboard' => t('Dashboard')"), 'Command palette dashboard label must be sourced from the Dashboard translation key.');
+assert_core_ux_flow(str_contains($footer, "'dashboard' => t('Work')"), 'Command palette must use the same Work label as the primary navigation.');
 assert_core_ux_flow(str_contains($shortcuts, 'label: labels.analytics'), 'Command palette must keep the legacy analytics dashboard distinct.');
 
 $work = read_core_ux_flow_file($root, 'includes/modules/work/work-queues.php');

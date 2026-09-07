@@ -1303,7 +1303,7 @@ return [
     'Resolved tickets' => 'Vyřešené požadavky',
     'Every non-archived ticket' => 'Všechny nearchivované požadavky',
     'Archived tickets' => 'Archivované požadavky',
-    'Work' => 'Nástěnka',
+    'Work' => 'Práce',
     'Work queues' => 'Pracovní fronty',
     'Start with the queue that needs attention now.' => 'Začněte frontou, která teď potřebuje pozornost.',
     'Current queue' => 'Aktuální fronta',

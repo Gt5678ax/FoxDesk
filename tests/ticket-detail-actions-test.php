@@ -131,3 +131,18 @@ $assert(ticket_detail_first_done_status_id([
 ]) === 9, 'Complete must prefer accented Czech done statuses over canceled terminal statuses.');
 
 echo "Ticket detail action contract OK\n";
+
+// A client may edit their own subject, but cannot use the staff assignment controls.
+if (!function_exists('can_edit_ticket')) {
+    function can_edit_ticket(array $ticket, array $user): bool
+    {
+        return ($user['role'] ?? '') !== 'user' || (int) ($ticket['created_by'] ?? 0) === (int) ($user['id'] ?? -1);
+    }
+}
+$client_action_keys = array_column(ticket_detail_primary_actions(
+    ['status_id' => 1, 'is_closed' => 0, 'created_by' => 42],
+    ['role' => 'user', 'id' => 42],
+    $statuses_with_canceled_first
+), 'key');
+$assert(in_array('edit', $client_action_keys, true), 'A client must retain editing of their own ticket.');
+$assert(!in_array('assign', $client_action_keys, true), 'Clients must not see an assignment action without staff controls.');

@@ -194,7 +194,7 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['verify_2fa'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo e(t('Sign in')); ?> - <?php echo e($app_name); ?></title>
     <link href="tailwind.min.css" rel="stylesheet">
-    <link href="assets/css/theme.min.css" rel="stylesheet">
+    <link href="assets/css/theme.min.css?v=<?php echo e((string) APP_VERSION . '-' . (string) (@filemtime(BASE_PATH . '/assets/css/theme.min.css') ?: '0')); ?>" rel="stylesheet">
     <script>
         // Apply theme immediately to prevent flash
         (function () {
@@ -282,9 +282,9 @@ elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['verify_2fa'])) {
                     <span class="text-white text-4xl font-bold"><?php echo strtoupper(substr($app_name, 0, 1)); ?></span>
                 </div>
             <?php endif; ?>
-            <h1 class="text-4xl font-bold mb-4"><?php echo e(t('Welcome to {app}', ['app' => $app_name])); ?></h1>
+            <h1 class="text-4xl font-bold mb-4"><?php echo e($app_name); ?></h1>
             <p class="text-slate-300 text-lg">
-                <?php echo e($settings['login_welcome_text'] ?? t('Manage your tickets, track time, and support your customers with our corporate enterprise helpdesk.')); ?>
+                <?php echo e($settings['login_welcome_text'] ?? ''); ?>
             </p>
         </div>
     </div>

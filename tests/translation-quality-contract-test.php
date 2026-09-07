@@ -59,6 +59,7 @@ $sameAsEnglishAllowlist = array_fill_keys([
     'Logo',
     'Manual',
     'Model',
+    'Microsoft 365 / Outlook',
     'MySQL',
     'Name',
     'Navigation',

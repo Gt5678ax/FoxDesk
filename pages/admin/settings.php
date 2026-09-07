@@ -156,15 +156,15 @@ require_once BASE_PATH . '/includes/header.php';
 
 <?php
 $page_header_title = $page_title;
-$page_header_subtitle = t('Configure system-wide preferences.');
+$page_header_subtitle = '';
 include BASE_PATH . '/includes/components/page-header.php';
 ?>
 
-<div class="admin-shell">
-    <?php render_admin_settings_management_links(); ?>
+<div class="admin-shell settings-workspace">
 
     <!-- Tabs -->
     <?php render_admin_settings_tabs($tab); ?>
+    <div class="settings-section-content">
 
     <?php
     $settings_view = settings_view_file($tab);
@@ -175,5 +175,6 @@ include BASE_PATH . '/includes/components/page-header.php';
         require $settings_view;
     }
     ?>
+    </div>
 </div>
 <?php require_once BASE_PATH . '/includes/footer.php';

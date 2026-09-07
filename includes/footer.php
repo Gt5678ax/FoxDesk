@@ -30,7 +30,7 @@
         startWorkFailedLabel: <?php echo json_encode(t('Could not start work.')); ?>,
         shortcutLabels: <?php echo json_encode([
             'search' => t('Search tickets, clients, history...'),
-            'dashboard' => t('Dashboard'),
+            'dashboard' => t('Work'),
             'dashboardDesc' => t('Open your main workspace dashboard'),
             'analytics' => t('Analytics'),
             'analyticsDesc' => t('View analytics dashboard'),

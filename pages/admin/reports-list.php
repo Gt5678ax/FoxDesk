@@ -147,8 +147,7 @@ include BASE_PATH . '/includes/header.php';
     <section class="admin-hero">
         <div>
             <p class="admin-eyebrow"><?php echo e(t('Reports')); ?></p>
-            <h2><?php echo e(t('Client Reports')); ?></h2>
-            <p><?php echo e(t('Create and manage professional time tracking reports for clients')); ?></p>
+            <h1 class="page-header-title"><?php echo e(t('Client Reports')); ?></h1>
         </div>
         <div class="admin-hero-actions">
             <a href="<?php echo url('admin', ['section' => 'report-builder']); ?>" class="btn btn-primary btn-sm">

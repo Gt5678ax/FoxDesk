@@ -19,6 +19,14 @@ function setSidebarOpen(isOpen) {
     // Update aria-expanded on mobile menu button
     var mobileMenuBtn = document.getElementById('mobile-menu-btn');
     if (mobileMenuBtn) mobileMenuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    if (mobileMenuBtn && mobileMenuBtn.getClientRects().length) {
+        if (isOpen) {
+            var firstControl = sidebar.querySelector('button, a[href]');
+            if (firstControl) firstControl.focus();
+        } else if (sidebar.contains(document.activeElement)) {
+            mobileMenuBtn.focus();
+        }
+    }
 
     try {
         localStorage.setItem('sidebar_open', isOpen ? '1' : '0');
@@ -31,6 +39,32 @@ function toggleSidebar(forceState) {
     var shouldOpen = typeof forceState === 'boolean' ? forceState : !sidebar.classList.contains('open');
     setSidebarOpen(shouldOpen);
 }
+
+document.addEventListener('keydown', function (event) {
+    var sidebar = document.getElementById('sidebar');
+    var mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    if (!sidebar || !sidebar.classList.contains('open') || !mobileMenuBtn || !mobileMenuBtn.getClientRects().length) return;
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        setSidebarOpen(false);
+        mobileMenuBtn.focus();
+        return;
+    }
+    if (event.key !== 'Tab') return;
+    var controls = Array.prototype.filter.call(sidebar.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex="0"]'), function (element) {
+        return element.getClientRects().length > 0;
+    });
+    if (!controls.length) return;
+    var first = controls[0];
+    var last = controls[controls.length - 1];
+    if (event.shiftKey && (document.activeElement === first || !sidebar.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && (document.activeElement === last || !sidebar.contains(document.activeElement))) {
+        event.preventDefault();
+        first.focus();
+    }
+});
 
 function setSidebarCompact(isCompact, persist) {
     var sidebar = document.getElementById('sidebar');

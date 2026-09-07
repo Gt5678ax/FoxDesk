@@ -76,7 +76,7 @@ unset($_SESSION['new_ai_agent_token'], $_SESSION['new_ai_agent_id']);
 require_once BASE_PATH . '/includes/header.php';
 
 $page_header_title = $page_title;
-$page_header_subtitle = t('Manage users, roles, and access.');
+$page_header_subtitle = '';
 include BASE_PATH . '/includes/components/page-header.php';
 
 if ($ai_agent_col_exists) {

@@ -303,7 +303,7 @@ require_once BASE_PATH . '/includes/header.php';
 
 <?php
 $page_header_title = $page_title;
-$page_header_subtitle = t('Manage organizations and visibility.');
+$page_header_subtitle = '';
 $page_header_actions = '<a href="#new-client-company" class="btn btn-primary">'
     . get_icon('plus', 'w-4 h-4')
     . '<span>' . e(t('Add organization')) . '</span></a>';

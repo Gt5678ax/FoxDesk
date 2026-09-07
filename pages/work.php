@@ -6,7 +6,7 @@
  * shows the queues that need attention now.
  */
 
-$page_title = t('Dashboard');
+$page_title = t('Work');
 $page = 'work';
 $user = current_user();
 $is_staff = is_admin() || is_agent();
@@ -259,8 +259,39 @@ $render_current_work_timers = static function (array $timers): void {
 
 require_once BASE_PATH . '/includes/header.php';
 ?>
+<header class="work-canvas-intro">
+    <h1><?php echo e(t('Work')); ?></h1>
+    <a class="btn btn-primary" href="<?php echo url('new-ticket'); ?>"><?php echo get_icon('plus', 'w-4 h-4'); ?> <?php echo e(t('New ticket')); ?></a>
+</header>
+<div class="work-canvas-grid">
+    <div class="work-canvas-main"><?php
+workspace_render_queue_page([
+    'title' => 'Tickets',
+    'variant' => 'canvas',
+    'summary' => $queue_summary,
+    'active_key' => $queue_key,
+    'active_queue' => $active_queue,
+    'items' => $active_items,
+    'queue_url' => $work_queue_url,
+    'view_all_url' => $work_tickets_url($queue_key),
+    'primary_action' => '',
+    'row_options' => ['show_assignee' => true],
+]);
+?></div>
+    <aside class="work-canvas-side"><?php if ($is_staff): ?>
+<section class="fd-card fd-page-section work-current-card" data-work-current>
+    <div class="fd-section-header work-team-head">
+        <div class="fd-section-main">
+            <h2 class="fd-section-title work-team-title"><?php echo e(t('Current work')); ?></h2>
+        </div>
+    </div>
+    <?php $render_current_work_timers($current_work_timers); ?>
+</section>
+<?php endif; ?></aside>
+</div>
 
-<section class="fd-card fd-page-section work-overview-card" data-work-time-overview>
+
+<section id="time-overview" class="fd-card fd-page-section work-overview-card" data-work-time-overview>
     <div class="fd-section-header work-overview-head">
         <div class="fd-section-main">
             <h2 class="fd-section-title work-overview-title"><?php echo e(t('Work overview')); ?></h2>
@@ -377,16 +408,7 @@ require_once BASE_PATH . '/includes/header.php';
 
 </section>
 
-<?php if ($is_staff): ?>
-<section class="fd-card fd-page-section work-current-card" data-work-current>
-    <div class="fd-section-header work-team-head">
-        <div class="fd-section-main">
-            <h2 class="fd-section-title work-team-title"><?php echo e(t('Current work')); ?></h2>
-        </div>
-    </div>
-    <?php $render_current_work_timers($current_work_timers); ?>
-</section>
-<?php endif; ?>
+
 
 <section class="fd-card fd-page-section work-activity-card"
          data-work-user-activity
@@ -483,19 +505,7 @@ require_once BASE_PATH . '/includes/header.php';
 </section>
 <?php endif; ?>
 
-<?php
-workspace_render_queue_page([
-    'title' => 'Tickets',
-    'summary' => $queue_summary,
-    'active_key' => $queue_key,
-    'active_queue' => $active_queue,
-    'items' => $active_items,
-    'queue_url' => $work_queue_url,
-    'view_all_url' => $work_tickets_url($queue_key),
-    'primary_action' => '',
-    'row_options' => ['show_assignee' => true],
-]);
-?>
+
 
 <script defer src="assets/js/work-dashboard.js?v=<?php echo e((string) APP_VERSION); ?>"></script>
 <?php require_once BASE_PATH . '/includes/footer.php'; ?>

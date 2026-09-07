@@ -83,7 +83,7 @@ assert_rtl(str_contains($theme_css, '.app-toast-fallback'), 'Fallback toasts mus
 assert_rtl(str_contains($theme_css, '--fd-inline-enter-x: -24px;'), 'RTL toast entrance animation must travel from the inline end');
 assert_rtl(str_contains($theme_css, '--fd-inline-exit-x: -20px;'), 'RTL toast exit animation must travel toward the inline end');
 assert_rtl(str_contains($theme_css, '--fd-chevron-expanded-turn: -90deg;'), 'RTL accordion chevrons must rotate in the mirrored direction');
-assert_rtl(str_contains($theme_css, 'var(--fd-inline-nudge-x)'), 'Shared horizontal hover animations must use directional variables');
+assert_rtl(preg_match('/\.app-shell-page \.sidebar \.nav-item \{[^}]*transform: none;/s', $theme_css) === 1, 'Navigation must remain stationary on hover in both directions');
 
 // 6. Test admin settings language picker derives Arabic from the registry
 $general_settings_view = file_get_contents($root . '/includes/modules/settings/views/general.php');

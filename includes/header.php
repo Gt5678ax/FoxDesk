@@ -39,14 +39,14 @@ if (file_exists(__DIR__ . '/pseudo-cron.php')) {
         })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="page-title"><?php echo e($page_title ?? t('Dashboard')); ?> - <?php echo e($app_name); ?></title>
+    <title id="page-title"><?php echo e($page_title ?? t('Work')); ?> - <?php echo e($app_name); ?></title>
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <script>
         window.csrfToken = <?php echo json_encode(csrf_token()); ?>;
         window.appName = <?php echo json_encode($app_name); ?>;
         window.appDirection = <?php echo json_encode(get_app_direction()); ?>;
         window.isRTL = <?php echo is_rtl() ? 'true' : 'false'; ?>;
-        window.originalPageTitle = <?php echo json_encode(($page_title ?? t('Dashboard')) . ' - ' . $app_name); ?>;
+        window.originalPageTitle = <?php echo json_encode(($page_title ?? t('Work')) . ' - ' . $app_name); ?>;
         window.appNotificationPrefs = {
             inAppEnabled: <?php echo $in_app_notifications_enabled ? 'true' : 'false'; ?>,
             soundEnabled: <?php echo $in_app_sound_enabled ? 'true' : 'false'; ?>
@@ -123,9 +123,10 @@ if (file_exists(__DIR__ . '/pseudo-cron.php')) {
 
     <link href="tailwind.min.css?v=<?php echo APP_VERSION; ?>" rel="stylesheet">
 
-    <link href="assets/css/theme.min.css?v=<?php echo APP_VERSION; ?>" rel="stylesheet">
+    <?php $theme_asset_version = (string) APP_VERSION . '-' . (string) (@filemtime(BASE_PATH . '/assets/css/theme.min.css') ?: '0'); ?>
+    <link href="assets/css/theme.min.css?v=<?php echo e($theme_asset_version); ?>" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
-    <script defer src="assets/js/app-header.js?v=<?php echo APP_VERSION; ?>"></script>
+    <script defer src="assets/js/app-header.js?v=<?php echo e((string) APP_VERSION . '-' . (string) (@filemtime(BASE_PATH . '/assets/js/app-header.js') ?: '0')); ?>"></script>
     <script defer src="assets/js/shortcuts.js?v=<?php echo APP_VERSION; ?>"></script>
 
     <!-- Flatpickr — lazy-loaded only when date inputs exist on page -->
@@ -267,10 +268,10 @@ if (file_exists(__DIR__ . '/pseudo-cron.php')) {
                 <?php $is_work = ($page ?? '') === 'work'; ?>
                 <a href="<?php echo url('work'); ?>"
                     class="nav-item <?php echo $is_work ? 'active' : ''; ?>"
-                    title="<?php echo e(t('Dashboard')); ?>"
+                    title="<?php echo e(t('Work')); ?>"
                     <?php echo $is_work ? 'aria-current="page"' : ''; ?>>
                     <?php echo get_icon('home', 'nav-item__icon'); ?>
-                    <span><?php echo e(t('Dashboard')); ?></span>
+                    <span><?php echo e(t('Work')); ?></span>
                 </a>
 
                 <?php $is_tickets = ($page ?? '') === 'tickets' && ($_GET['archived'] ?? '') !== '1'; ?>
@@ -282,14 +283,12 @@ if (file_exists(__DIR__ . '/pseudo-cron.php')) {
                     <span><?php echo e(t('Tickets')); ?></span>
                 </a>
 
-                <?php if (is_admin()): ?>
-                    <?php $is_clients = ($page ?? '') === 'admin' && in_array(($_GET['section'] ?? ''), ['organizations', 'clients'], true); ?>
-                    <a href="<?php echo url('admin', ['section' => 'organizations']); ?>"
-                        class="nav-item <?php echo $is_clients ? 'active' : ''; ?>"
-                        title="<?php echo e(t('Clients')); ?>"
-                        <?php echo $is_clients ? 'aria-current="page"' : ''; ?>>
-                        <?php echo get_icon('building', 'nav-item__icon'); ?>
-                        <span><?php echo e(t('Clients')); ?></span>
+
+
+                <?php if (is_admin() || is_agent()): ?>
+                    <a href="<?php echo url('work'); ?>#time-overview" class="nav-item" title="<?php echo e(t('Time')); ?>">
+                        <?php echo get_icon('clock', 'nav-item__icon'); ?>
+                        <span><?php echo e(t('Time')); ?></span>
                     </a>
                 <?php endif; ?>
 
@@ -301,6 +300,17 @@ if (file_exists(__DIR__ . '/pseudo-cron.php')) {
                         <?php echo $is_time_reports ? 'aria-current="page"' : ''; ?>>
                         <?php echo get_icon('chart-bar', 'nav-item__icon'); ?>
                         <span><?php echo e(t('Reports')); ?></span>
+                    </a>
+                <?php endif; ?>
+
+                <?php if (is_admin()): ?>
+                    <?php $is_clients = ($page ?? '') === 'admin' && in_array(($_GET['section'] ?? ''), ['organizations', 'clients'], true); ?>
+                    <a href="<?php echo url('admin', ['section' => 'organizations']); ?>"
+                        class="nav-item <?php echo $is_clients ? 'active' : ''; ?>"
+                        title="<?php echo e(t('Clients')); ?>"
+                        <?php echo $is_clients ? 'aria-current="page"' : ''; ?>>
+                        <?php echo get_icon('building', 'nav-item__icon'); ?>
+                        <span><?php echo e(t('Clients')); ?></span>
                     </a>
                 <?php endif; ?>
 
@@ -473,9 +483,9 @@ if (file_exists(__DIR__ . '/pseudo-cron.php')) {
             <button onclick="toggleSidebar()" id="mobile-menu-btn" class="p-2 rounded-xl transition-all sidebar-hover text-theme-secondary" aria-label="<?php echo e(t('Open menu')); ?>" aria-expanded="false" aria-controls="sidebar">
                 <?php echo get_icon('bars', 'text-xl'); ?>
             </button>
-            <h1 class="text-lg font-semibold truncate flex-1 mx-4 text-theme-primary">
-                <?php echo e($page_title ?? t('Dashboard')); ?>
-            </h1>
+            <div class="text-lg font-semibold truncate flex-1 mx-4 text-theme-primary">
+                <?php echo e($page_title ?? t('Work')); ?>
+            </div>
             <div class="flex items-center gap-2">
                 <!-- Notification Bell (Mobile) -->
                 <div class="relative">
@@ -527,8 +537,8 @@ if (file_exists(__DIR__ . '/pseudo-cron.php')) {
         <!-- Desktop Header -->
         <header class="app-topbar desktop-header bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-3 flex items-center justify-between sticky top-0 z-30 w-full">
             <div class="app-topbar-title">
-                <h1 class="text-lg font-semibold text-theme-primary"><?php echo e($page_title ?? t('Dashboard')); ?></h1>
-                <span class="app-shell-context"><?php echo e(t('Workspace')); ?></span>
+                <strong class="app-shell-workspace-name"><bdi dir="auto"><?php echo e($app_name); ?></bdi></strong>
+                <span class="app-shell-context"><?php echo e($page_title ?? t('Work')); ?></span>
             </div>
             <div class="flex items-center gap-4">
                 <form action="<?php echo url('tickets'); ?>" method="get" class="header-search-form relative"

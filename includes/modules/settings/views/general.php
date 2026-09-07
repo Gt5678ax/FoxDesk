@@ -28,7 +28,7 @@
                     <div>
                         <label class="block text-sm font-medium mb-1 text-theme-secondary"><?php echo e(t('Login page welcome text')); ?></label>
                         <textarea name="login_welcome_text"
-                            class="form-input h-20"><?php echo e($settings['login_welcome_text'] ?? 'Manage your tickets, track time, and support your customers with our corporate enterprise helpdesk.'); ?></textarea>
+                            class="form-input h-20"><?php echo e($settings['login_welcome_text'] ?? ''); ?></textarea>
                         <p class="text-xs mt-1 text-theme-muted">
                             <?php echo e(t('This text appears on the login screen below the application name.')); ?></p>
                     </div>

@@ -6,8 +6,9 @@
         ?>
 
         <!-- Mobile Filter Bar -->
-        <div class="block lg:hidden border-b px-4 py-3 glass border-theme-light">
-            <form method="get" action="index.php" class="flex flex-wrap items-center gap-2">
+        <details class="ticket-mobile-filters">
+            <summary><?php echo get_icon('filter', 'w-4 h-4'); ?> <?php echo e(t('Filters')); ?></summary>
+            <form method="get" action="index.php" class="ticket-mobile-filter-form">
                 <input type="hidden" name="page" value="tickets">
                 <input type="hidden" name="search_scope" value="all">
                 <?php if (!$is_archive && $ticket_list_view !== 'open'): ?>
@@ -61,8 +62,7 @@
                 </a>
                 <?php endif; ?>
             </form>
-        </div>
-
+        </details>
         <?php if ($tags_supported && !empty($tag_filters)): ?>
             <?php
             $clear_tags_params = $_GET;
@@ -197,13 +197,74 @@
                 <?php if ($is_archive): ?>
                     <input type="hidden" name="archived" value="1">
                 <?php endif; ?>
-            <table class="w-full hidden lg:table tickets-table text-xs" style="table-layout: fixed;">
+            <div class="ticket-filter-toolbar">
+                <div class="ticket-search-wrap">
+                                        <input type="text" name="search" value="<?php echo e($search_query); ?>"
+                                            placeholder="<?php echo e(t('Search...')); ?>"
+                                            class="ticket-search-input"
+                                            id="ticket-search-input"
+                                            autocomplete="off">
+                                        <span class="search-icon"><?php echo get_icon('search', 'w-3 h-3'); ?></span>
+                                        <div class="ticket-search-suggestions" id="ticket-search-suggestions"></div>
+                                    </div>
+                <select name="status" class="filter-select" onchange="this.form.submit()">
+                                <option value=""><?php echo e(t('Status')); ?></option>
+                                <?php foreach ($statuses as $status): ?>
+                                    <option value="<?php echo $status['id']; ?>" <?php echo $status_id == $status['id'] ? 'selected' : ''; ?>>
+                                        <?php echo e($status['name']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                <select name="priority" class="filter-select" onchange="this.form.submit()">
+                                <option value=""><?php echo e(t('Priority')); ?></option>
+                                <?php foreach ($priorities as $priority): ?>
+                                    <option value="<?php echo $priority['id']; ?>" <?php echo $priority_id == $priority['id'] ? 'selected' : ''; ?>>
+                                        <?php echo e($priority['name']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                <select name="due_date" class="filter-select" onchange="this.form.submit()">
+                                <option value=""><?php echo e(t('Due')); ?></option>
+                                <option value="overdue" <?php echo $due_date_filter === 'overdue' ? 'selected' : ''; ?>>!</option>
+                                <option value="today" <?php echo $due_date_filter === 'today' ? 'selected' : ''; ?>><?php echo e(t('Today')); ?></option>
+                                <option value="week" <?php echo $due_date_filter === 'week' ? 'selected' : ''; ?>><?php echo e(t('Week')); ?></option>
+                            </select>
+                <?php if (is_admin() && !empty($organizations)): ?>
+                    <select name="organization" class="filter-select" onchange="this.form.submit()">
+                                    <option value=""><?php echo e(t('Company')); ?></option>
+                                    <?php foreach ($organizations as $org): ?>
+                                        <option value="<?php echo $org['id']; ?>" <?php echo $organization_id == $org['id'] ? 'selected' : ''; ?>>
+                                            <?php echo e($org['name']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                <?php endif; ?>
+                <?php if (is_admin() || is_agent()): ?>
+                    <select name="user" class="filter-select" onchange="this.form.submit()">
+                                    <option value=""><?php echo e(t('User...')); ?></option>
+                                    <?php foreach ($filter_users as $fu): ?>
+                                        <option value="<?php echo e($fu['first_name'] . ' ' . $fu['last_name']); ?>"
+                                            <?php echo $user_search === ($fu['first_name'] . ' ' . $fu['last_name']) ? 'selected' : ''; ?>>
+                                            <?php echo e($fu['first_name'] . ' ' . substr($fu['last_name'] ?? '', 0, 1) . '.'); ?>
+                                            <?php if ($fu['role'] !== 'user'): ?><span style="opacity:0.5">(<?php echo e($fu['role']); ?>)<?php endif; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                <?php endif; ?>
+                <?php if ($has_filters): ?>
+                    <a href="<?php echo e($ticket_clear_url); ?>" class="btn btn-secondary btn-sm"><?php echo e(t('Clear')); ?></a>
+                <?php endif; ?>
+            </div>
+            <input type="hidden" name="created_date" value="<?php echo e($created_date_value); ?>">
+            <input type="hidden" name="sort" value="<?php echo e($sort); ?>">
+            <div class="ticket-table-scroll" tabindex="0" role="region" aria-label="<?php echo e(t('Tickets')); ?>">
+            <table class="w-full hidden lg:table tickets-table tickets-table--fixed text-xs">
                 <thead>
                     <tr class="border-b border-theme-light">
-                        <th class="px-3 py-2.5 text-left" style="width: 80px;">
+                        <th scope="col" class="px-3 py-2.5 text-left tickets-col-date">
                             <div class="flex items-center gap-1">
                                 <?php if ($bulk_actions_enabled): ?>
-                                    <input type="checkbox" id="select-all" class="rounded hidden" onchange="toggleAll(this)">
+                                    <input type="checkbox" id="select-all" aria-label="<?php echo e(t('Select all')); ?>" class="rounded hidden" onchange="toggleAll(this)">
                                 <?php endif; ?>
                                 <a href="<?php echo e($date_sort_url); ?>"
                                    class="ticket-date-sort <?php echo $date_sort_is_active ? 'is-active' : ''; ?>"
@@ -214,105 +275,17 @@
                                 </a>
                             </div>
                         </th>
-                        <th class="px-3 py-2.5 text-left" style="min-width: 260px; max-width: 480px; overflow:visible">
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="text-[10px] font-medium uppercase tracking-wider text-theme-muted"><?php echo e(t('Subject')); ?></span>
-                                <div class="flex items-center gap-1.5">
-                                    <div class="ticket-search-wrap">
-                                        <input type="text" name="search" value="<?php echo e($search_query); ?>"
-                                            placeholder="<?php echo e(t('Search...')); ?>"
-                                            class="ticket-search-input"
-                                            id="ticket-search-input"
-                                            autocomplete="off">
-                                        <span class="search-icon"><?php echo get_icon('search', 'w-3 h-3'); ?></span>
-                                        <div class="ticket-search-suggestions" id="ticket-search-suggestions"></div>
-                                    </div>
-                                    <?php if ($has_filters): ?>
-                                    <a href="<?php echo e($ticket_clear_url); ?>"
-                                       class="inline-flex items-center justify-center w-6 h-6 rounded hover:text-red-500 hover:bg-red-50 transition-colors text-theme-muted" title="<?php echo e(t('Clear')); ?>">
-                                        <?php echo get_icon('x', 'w-3.5 h-3.5'); ?>
-                                    </a>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </th>
-                        <th class="px-2 py-2.5" style="width: 140px;">
-                            <select name="status" class="filter-select" onchange="this.form.submit()">
-                                <option value=""><?php echo e(t('Status')); ?></option>
-                                <?php foreach ($statuses as $status): ?>
-                                    <option value="<?php echo $status['id']; ?>" <?php echo $status_id == $status['id'] ? 'selected' : ''; ?>>
-                                        <?php echo e($status['name']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </th>
-                        <th class="px-2 py-2.5" style="width: 110px;">
-                            <select name="priority" class="filter-select" onchange="this.form.submit()">
-                                <option value=""><?php echo e(t('Priority')); ?></option>
-                                <?php foreach ($priorities as $priority): ?>
-                                    <option value="<?php echo $priority['id']; ?>" <?php echo $priority_id == $priority['id'] ? 'selected' : ''; ?>>
-                                        <?php echo e($priority['name']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </th>
-                        <th class="px-2 py-2.5" style="width: 90px;">
-                            <select name="due_date" class="filter-select" onchange="this.form.submit()">
-                                <option value=""><?php echo e(t('Due')); ?></option>
-                                <option value="overdue" <?php echo $due_date_filter === 'overdue' ? 'selected' : ''; ?>>!</option>
-                                <option value="today" <?php echo $due_date_filter === 'today' ? 'selected' : ''; ?>><?php echo e(t('Today')); ?></option>
-                                <option value="week" <?php echo $due_date_filter === 'week' ? 'selected' : ''; ?>><?php echo e(t('Week')); ?></option>
-                            </select>
-                        </th>
+                        <th scope="col" class="tickets-col-subject"><?php echo e(t('Subject')); ?></th>
+                        <th scope="col" class="tickets-col-status"><?php echo e(t('Status')); ?></th>
+                        <th scope="col" class="tickets-col-priority"><?php echo e(t('Priority')); ?></th>
+                        <th scope="col" class="tickets-col-due"><?php echo e(t('Due date')); ?></th>
                         <?php if (is_admin()): ?>
-                            <th class="px-2 py-2.5" style="width: 120px;">
-                                <?php if (!empty($organizations)): ?>
-                                <select name="organization" class="filter-select" onchange="this.form.submit()">
-                                    <option value=""><?php echo e(t('Company')); ?></option>
-                                    <?php foreach ($organizations as $org): ?>
-                                        <option value="<?php echo $org['id']; ?>" <?php echo $organization_id == $org['id'] ? 'selected' : ''; ?>>
-                                            <?php echo e($org['name']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <?php endif; ?>
-                            </th>
+                            <th scope="col" class="tickets-col-company"><?php echo e(t('Company')); ?></th>
                         <?php endif; ?>
-                        <?php if (is_admin()): ?>
-                            <th class="px-2 py-2.5" style="width: 110px;">
-                                <select name="user" class="filter-select" onchange="this.form.submit()">
-                                    <option value=""><?php echo e(t('User...')); ?></option>
-                                    <?php foreach ($filter_users as $fu): ?>
-                                        <option value="<?php echo e($fu['first_name'] . ' ' . $fu['last_name']); ?>"
-                                            <?php echo $user_search === ($fu['first_name'] . ' ' . $fu['last_name']) ? 'selected' : ''; ?>>
-                                            <?php echo e($fu['first_name'] . ' ' . substr($fu['last_name'] ?? '', 0, 1) . '.'); ?>
-                                            <?php if ($fu['role'] !== 'user'): ?><span style="opacity:0.5">(<?php echo e($fu['role']); ?>)</span><?php endif; ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </th>
-                            <th class="px-3 py-2.5 text-left" style="width: 110px;">
-                                <span class="text-[10px] font-medium uppercase tracking-wider text-theme-muted"><?php echo e(t('Time')); ?></span>
-                            </th>
-                        <?php elseif (is_agent()): ?>
-                            <th class="px-2 py-2.5" style="width: 110px;">
-                                <select name="user" class="filter-select" onchange="this.form.submit()">
-                                    <option value=""><?php echo e(t('User...')); ?></option>
-                                    <?php foreach ($filter_users as $fu): ?>
-                                        <option value="<?php echo e($fu['first_name'] . ' ' . $fu['last_name']); ?>"
-                                            <?php echo $user_search === ($fu['first_name'] . ' ' . $fu['last_name']) ? 'selected' : ''; ?>>
-                                            <?php echo e($fu['first_name'] . ' ' . substr($fu['last_name'] ?? '', 0, 1) . '.'); ?>
-                                            <?php if ($fu['role'] !== 'user'): ?>(<?php echo e($fu['role']); ?>)<?php endif; ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </th>
-                            <th class="px-3 py-2.5 text-left" style="width: 110px;">
-                                <span class="text-[10px] font-medium uppercase tracking-wider text-theme-muted"><?php echo e(t('Time')); ?></span>
-                            </th>
+                        <?php if (is_admin() || is_agent()): ?>
+                            <th scope="col" class="tickets-col-user"><?php echo e(t('Assigned to')); ?></th>
+                            <th scope="col" class="tickets-col-time"><?php echo e(t('Time')); ?></th>
                         <?php endif; ?>
-                        <input type="hidden" name="created_date" value="<?php echo e($created_date_value); ?>">
-                        <input type="hidden" name="sort" value="<?php echo e($sort); ?>">
                     </tr>
                 </thead>
                 <tbody>
@@ -424,7 +397,7 @@
                             <td class="px-3 py-2.5 align-top">
                                 <div class="flex items-center gap-1.5">
                                     <?php if (is_agent() || is_admin()): ?>
-                                    <span class="ticket-subject-link truncate tl-inline-text tl-inline-edit"
+                                    <span class="ticket-subject-link tl-inline-text tl-inline-edit"
                                           dir="auto"
                                           data-ticket="<?php echo (int)$ticket['id']; ?>"
                                           data-field="subject"
@@ -432,7 +405,7 @@
                                           title="<?php echo e(t('Click to edit')); ?>"
                                           style="cursor: text;"><?php echo e($ticket['title']); ?></span>
                                     <?php else: ?>
-                                    <a href="<?php echo ticket_url($ticket); ?>" class="ticket-subject-link truncate" dir="auto">
+                                    <a href="<?php echo ticket_url($ticket); ?>" class="ticket-subject-link" dir="auto">
                                         <?php echo e($ticket['title']); ?>
                                     </a>
                                     <?php endif; ?>
@@ -442,7 +415,7 @@
                                         </span>
                                     <?php endif; ?>
                                 </div>
-                                <div class="text-[11px] mt-0.5 text-theme-muted">
+                                <div class="ticket-secondary-meta text-theme-muted">
                                     <?php if ((is_agent() || is_admin()) && !empty($ticket_types_list)): ?>
                                         <span class="tl-inline-edit" style="position:relative; display:inline-block;">
                                             <span class="tl-edit-trigger tl-type-trigger"
@@ -703,6 +676,7 @@
                 </tbody>
                 <?php endforeach; ?>
             </table>
+            </div>
         </form>
 
         <!-- Bulk Actions Bar -->

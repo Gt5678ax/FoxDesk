@@ -1,11 +1,12 @@
 {
-    "version": "0.3.143",
-    "date": "2026-09-01",
+    "version": "0.3.144",
+    "date": "2026-09-07",
     "min_php": "8.1",
     "changelog": [
-        "Authenticated comment authors can edit their own sent comments",
-        "Administrators retain permission to edit any comment while other users remain blocked",
-        "Comment editing now uses the same creator-or-admin permission rule in the UI and backend"
+        "Redesigned workspace with Work, Tickets, Time, Reports and Clients navigation",
+        "Compact ticket lists with readable subjects and collapsible mobile filters",
+        "Consistent page headings, client reports and settings navigation",
+        "Removed default promotional copy while preserving custom workspace text and self-hosted controls"
     ],
     "delete_files": []
 }

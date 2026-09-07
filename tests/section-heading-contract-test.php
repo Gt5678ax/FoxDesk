@@ -37,7 +37,7 @@ foreach ([
     assert_section_heading(!str_contains($work, $forbidden), 'Work page still contains redundant visible copy: ' . $forbidden);
 }
 
-assert_section_heading(($cs['Work'] ?? '') === 'Nástěnka', 'Czech Work label must be Nástěnka.');
+assert_section_heading(($cs['Work'] ?? '') === 'Práce', 'Czech Work label must be Práce.');
 assert_section_heading(($cs['Work overview'] ?? '') === 'Odpracovaný čas', 'Czech work overview label must be Odpracovaný čas.');
 assert_section_heading(($cs['Current work'] ?? '') === 'Právě se řeší', 'Czech current work label must be Právě se řeší.');
 assert_section_heading(($cs['My work log'] ?? '') === 'Moje záznamy', 'Czech work log label must be Moje záznamy.');

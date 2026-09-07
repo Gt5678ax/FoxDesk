@@ -149,7 +149,7 @@ function ticket_detail_primary_actions(array $ticket, array $user, array $status
         ];
     }
 
-    if ($can_edit) {
+    if ($is_agent_user && $can_edit) {
         $actions[] = [
             'key' => 'assign',
             'label' => 'Assign',

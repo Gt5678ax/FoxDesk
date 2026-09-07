@@ -320,8 +320,7 @@ include BASE_PATH . '/includes/header.php';
     <section class="admin-hero">
         <div>
             <p class="admin-eyebrow"><?php echo e(t('Reports')); ?></p>
-            <h2><?php echo e($editing ? t('Edit Client Report') : t('Create Client Report')); ?></h2>
-            <p><?php echo e($editing ? t('Update this client report') : t('Generate a professional time tracking report for your clients')); ?></p>
+            <h1 class="page-header-title"><?php echo e($editing ? t('Edit Client Report') : t('Create Client Report')); ?></h1>
         </div>
         <div class="admin-hero-actions">
             <a href="<?php echo url('admin', ['section' => 'reports-list']); ?>" class="btn btn-secondary btn-sm">

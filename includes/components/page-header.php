@@ -15,7 +15,7 @@
     $admin_section = isset($_GET['section']) ? (string) $_GET['section'] : '';
     $is_admin_child_page = ($GLOBALS['page'] ?? null) === 'admin'
         && $admin_section !== ''
-        && $admin_section !== 'settings'
+        && !in_array($admin_section, ['settings', 'organizations', 'clients', 'reports', 'reports-list', 'report-builder'], true)
         && function_exists('is_admin')
         && is_admin();
 
@@ -26,7 +26,7 @@
         ];
     }
     ?>
-    <?php if (!empty($page_header_breadcrumbs) && is_array($page_header_breadcrumbs)): ?>
+    <?php if (!empty($page_header_breadcrumbs) && is_array($page_header_breadcrumbs) && count($page_header_breadcrumbs) > 1): ?>
         <nav class="text-xs text-gray-500 mb-2">
             <?php foreach ($page_header_breadcrumbs as $index => $crumb): ?>
                 <?php if (!empty($crumb['url'])): ?>
@@ -41,15 +41,15 @@
         </nav>
     <?php endif; ?>
 
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="page-header-layout">
         <div>
-            <!-- Title removed as per UI cleanup request (redundant with top bar) -->
+            <h1 class="page-header-title"><?php echo e($page_title ?? t('Work')); ?></h1>
             <?php if (!empty($page_header_subtitle)): ?>
                 <p class="text-sm text-gray-500 mt-1"><?php echo e($page_header_subtitle); ?></p>
             <?php endif; ?>
         </div>
         <?php if (!empty($page_header_actions)): ?>
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="page-header-actions flex flex-wrap items-center gap-2">
                 <?php echo $page_header_actions; ?>
             </div>
         <?php endif; ?>

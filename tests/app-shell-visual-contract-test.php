@@ -32,9 +32,9 @@ $assert(!str_contains($header, '<style>'), 'Workspace header shell must keep vis
 $assert(!str_contains($header, "style=\"background:"), 'Notification avatars must use tokenized classes, not inline colors.');
 
 foreach ([
-    '--app-sidebar-width: 280px;',
-    '--app-sidebar-compact-width: 76px;',
-    '--app-content-max: 1480px;',
+    '--app-sidebar-width: 236px;',
+    '--app-sidebar-compact-width: 72px;',
+    '--app-content-max: 2560px;',
     '.app-shell-page .app-content',
     '.app-topbar',
     '.app-shell-context',
