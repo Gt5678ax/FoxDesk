@@ -5069,7 +5069,8 @@ background: var(--surface-primary);
 }
 .tickets-table thead th {
 font-weight: 500;
-white-space: nowrap;
+white-space: normal;
+overflow-wrap: anywhere;
 }
 .tickets-table .ticket-row {
 border-bottom: 1px solid var(--border-light);
